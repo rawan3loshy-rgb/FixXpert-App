@@ -127,7 +127,7 @@ const drawHeader = () => {
 
   y -= 25
 
-  page.drawText("Daily Overview", {
+  page.drawText("Täglicher Bericht", {
     x: 40,
     y,
     size: 10,
