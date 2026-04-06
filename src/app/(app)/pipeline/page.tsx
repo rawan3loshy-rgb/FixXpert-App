@@ -47,7 +47,7 @@ export default function Page() {
       const { data: shop } = await supabase
         .from("shops")
         .select("id")
-        .eq("owner", user.id)
+        .eq("shop_id", user.id)
         .single()
 
       if (!shop) {

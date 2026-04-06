@@ -6,8 +6,6 @@ import { supabase } from "@/lib/supabase"
 import AuthLayout from "@/components/auth/auth-layout"
 import { useToast } from "@/components/ui/toast-provider"
 
-
-
 export default function LoginPage() {
 
   const router = useRouter()
@@ -24,40 +22,89 @@ export default function LoginPage() {
 
     setLoading(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // 🔥 تحقق إذا الجهاز trusted لهذا الإيميل
+    const isTrusted = localStorage.getItem("trusted_device") === email
+
+    // =========================
+    // 🟢 جهاز موثوق → دخول مباشر
+    // =========================
+    if (isTrusted) {
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if(error){
+        showToast("Falsche Email oder Passwort")
+        setLoading(false)
+        return
+      }
+
+      // ✅ حفظ وقت الدخول
+      localStorage.setItem("login_time", Date.now().toString())
+
+      // ✅ تخطي OTP
+      localStorage.setItem("otp_verified", "true")
+
+      router.push("/dashboard")
+      return
+    }
+
+    // =========================
+    // 🔐 جهاز جديد → تحقق بالباسورد ثم OTP
+    // =========================
+    const { error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password
     })
 
-    if(error){
-      showToast(error.message)
+    if(loginError){
+      showToast("Falsche Email oder Passwort")
       setLoading(false)
       return
     }
 
-    router.push("/verify?email="+email)
+    // ❗ logout لنفرض OTP
+    await supabase.auth.signOut()
+
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email,
+    })
+
+    if(otpError){
+      showToast("OTP konnte nicht gesendet werden")
+      setLoading(false)
+      return
+    }
+
+    localStorage.setItem("otp_verified", "false")
+
+    showToast("Bestätigungscode wurde gesendet")
+
+    router.push("/verify?email=" + email)
   }
 
   return(
     <AuthLayout>
 
       <h2 className="text-2xl font-bold mb-6">
-        Willkommen zurück
+        Login
       </h2>
 
       <form onSubmit={handleLogin} className="space-y-5">
 
         {/* EMAIL */}
-        <div className="relative">
+        <div>
           <input
             value={email}
             onChange={(e)=>setEmail(e.target.value)}
             placeholder="Email"
+            required
             className="
               w-full p-4 rounded-xl
               bg-slate-800 border border-white/10
               focus:border-indigo-500 outline-none
-              transition
             "
           />
         </div>
@@ -69,6 +116,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e)=>setPassword(e.target.value)}
             placeholder="Passwort"
+            required
             className="w-full p-4 rounded-xl bg-slate-800 border border-white/10"
           />
 
@@ -91,7 +139,7 @@ export default function LoginPage() {
             transition font-semibold
           "
         >
-          {loading ? "laden..." : "Login"}
+          {loading ? "Weiter..." : "Weiter"}
         </button>
 
       </form>

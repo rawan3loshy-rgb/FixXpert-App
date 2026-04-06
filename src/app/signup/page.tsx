@@ -52,17 +52,16 @@ export default function Signup() {
     // =========================
     // 🏪 CREATE SHOP (FIX أساسي)
     // =========================
-    const { error: insertError } = await supabase.from("shops").insert([
-      {
-        owner: user.id,
-        email: email,
-        shop_name: shopName,
-        status: "pending",
-
-        // 🔐 NEW (مهم جداً)
-        profit_pin: "123456"
-      },
-    ])
+     const { error: insertError } = await supabase.from("shops").insert([
+    {
+    shop_id: user.id, // ✅ هذا أهم سطر
+    shop_name: shopName,
+    email: email,
+    status: "pending",
+    profit_pin: "123456",
+    subscription_status: "inactive"
+  },
+])
 
     if (insertError) {
       showToast(insertError.message)

@@ -92,7 +92,7 @@ export default function ProfitPage(){
     const { data: shopData } = await supabase
       .from("shops")
       .select("*")
-      .eq("owner", session.user.id)
+      .eq("shop_id", session.user.id)
       .limit(1)
       .maybeSingle()
 

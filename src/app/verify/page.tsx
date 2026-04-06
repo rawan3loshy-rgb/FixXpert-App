@@ -21,22 +21,24 @@ export default function Verify(){
   const [errorAnim,setErrorAnim] = useState(false)
   const [attempts,setAttempts] = useState(0)
 
-  // 🔐 guards
+  // 🔥 NEW
+  const [remember,setRemember] = useState(false)
+
   const sentRef = useRef(false)
   const lockedRef = useRef(false)
 
   // =========================
-  // 🔥 EMAIL VALIDATION
+  // EMAIL VALIDATION
   // =========================
   useEffect(() => {
     if (!email) {
-      showToast("Invalid access", "error")
+      showToast("Invalid access")
       router.push("/login")
     }
   }, [])
 
   // =========================
-  // 🔥 SEND OTP (مرة واحدة)
+  // SEND OTP (مرة واحدة)
   // =========================
   useEffect(() => {
 
@@ -60,7 +62,7 @@ export default function Verify(){
   }, [email])
 
   // =========================
-  // ⏱️ TIMER
+  // TIMER
   // =========================
   useEffect(()=>{
     if(timer === 0) return
@@ -73,11 +75,10 @@ export default function Verify(){
   },[timer])
 
   // =========================
-  // 🔐 VERIFY
+  // VERIFY (🔥 FIXED)
   // =========================
   const verifyCode = async () => {
 
-    // 🔒 lock system
     if (loading || lockedRef.current) return
 
     if(!token || token.length < 6){
@@ -86,9 +87,8 @@ export default function Verify(){
       return
     }
 
-    // 🔥 brute force protection
     if (attempts >= 5) {
-      showToast("Too many attempts. Please wait ⏳", "error")
+      showToast("Too many attempts. Please wait ⏳")
       return
     }
 
@@ -100,6 +100,7 @@ export default function Verify(){
       type: "email"
     })
 
+    // ❌ إذا خطأ
     if(error){
 
       setAttempts(prev => prev + 1)
@@ -107,28 +108,40 @@ export default function Verify(){
       showToast(error.message)
       triggerError()
 
-      // 🔥 lock بعد 5 محاولات
       if (attempts + 1 >= 5) {
         lockedRef.current = true
         setTimeout(() => {
           lockedRef.current = false
           setAttempts(0)
-        }, 30000) // 30 ثانية
+        }, 30000)
       }
 
       return
     }
 
+    // ✅ إذا نجاح
     if(data?.session){
       await supabase.auth.setSession(data.session)
     }
 
+    // 🔐 OTP verified
+    localStorage.setItem("otp_verified", "true")
+
+    // 🧠 Remember device (فقط إذا checked)
+    if (remember) {
+      localStorage.setItem("trusted_device", email)
+    }
+
+    // ⏱️ session start
+    localStorage.setItem("login_time", Date.now().toString())
+
     showToast("Login successful 🚀")
+
     router.push("/dashboard")
   }
 
   // =========================
-  // ⌨️ SUBMIT
+  // SUBMIT
   // =========================
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -136,7 +149,7 @@ export default function Verify(){
   }
 
   // =========================
-  // ❌ ERROR ANIMATION
+  // ERROR ANIMATION
   // =========================
   const triggerError = () => {
     setErrorAnim(true)
@@ -144,7 +157,7 @@ export default function Verify(){
   }
 
   // =========================
-  // 🔁 RESEND (Protected)
+  // RESEND
   // =========================
   const resendCode = async () => {
 
@@ -202,6 +215,18 @@ export default function Verify(){
           "
         />
 
+        {/* 🔥 REMEMBER DEVICE */}
+        <div className="flex items-center gap-2 mt-4">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e)=>setRemember(e.target.checked)}
+          />
+          <span className="text-sm text-slate-400">
+            Gerät merken
+          </span>
+        </div>
+
         <button
           type="submit"
           disabled={loading || lockedRef.current}
@@ -226,7 +251,6 @@ export default function Verify(){
           </button>
         </div>
 
-        {/* 🔥 SECURITY INFO */}
         <p className="text-center text-xs text-slate-500 mt-4">
           Attempts: {attempts}/5
         </p>

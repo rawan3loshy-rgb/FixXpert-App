@@ -17,7 +17,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [open,setOpen] = useState(false)
   const [lang,setLangState] = useState<"en"|"de">("en")
   const [mounted,setMounted] = useState(false)
-
+  const [shop, setShop] = useState<any>(null)
   useEffect(()=>{
     setMounted(true)
     setLangState(getLang())
@@ -43,14 +43,24 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="max-w-[1400px] mx-auto space-y-6">
 
             {/* TOPBAR */}
-            <div className="glass card flex justify-between items-center px-5 py-4">
+            <div className="glass card flex justify-between items-center px-5 py-4 relative z-[9999]"> 
 
               <div>
                 <p className="text-xs text-slate-400">{t("monitor")}</p>
                 <p className="text-sm text-slate-500">{pathname}</p>
-              </div>
+               </div>
 
-              <div className="flex items-center gap-3">
+               <div className="flex items-center gap-3">
+               {/* 🔥 EXPIRY DATE */}
+               <div className="text-xs text-slate-400 text-right">
+               <p>Plan</p>
+               <p className="text-white font-semibold">
+               {shop?.subscription_expires_at
+               ? new Date(shop.subscription_expires_at).toLocaleDateString()
+               : "No plan"}
+               </p>
+               </div>
+
 
                 {/* Notifications */}
                 <button

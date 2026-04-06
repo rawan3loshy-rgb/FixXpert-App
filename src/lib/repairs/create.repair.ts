@@ -26,7 +26,7 @@ export const createRepair = async (form: {
   const { data: shop, error: shopError } = await supabase
     .from("shops")
     .select("id")
-    .eq("owner", user.id)
+    .eq("shop_id", user.id)
     .single()
 
   if (shopError || !shop) {

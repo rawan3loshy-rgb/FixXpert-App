@@ -93,7 +93,7 @@ export default function RepairsPage() {
       const { data: shopData, error: shopError } = await supabase
         .from("shops")
         .select("*")
-        .eq("owner", user.id)
+        .eq("shop_id", user.id)
         .single()
 
       if (shopError || !shopData) {

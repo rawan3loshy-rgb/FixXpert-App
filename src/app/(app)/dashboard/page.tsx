@@ -33,10 +33,51 @@ export default function Page() {
 
   const lockTimer = useRef<any>(null)
 
-  useEffect(() => {
-    load()
-  }, [])
+ useEffect(() => {
 
+  const checkAccess = async () => {
+
+    // 🔐 تحقق من session
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (!session) {
+      router.push("/login")
+      
+      return
+      
+    }
+
+    // 🔥 تحقق OTP
+    if (localStorage.getItem("otp_verified") !== "true") {
+      router.push("/verify")
+      return
+    }
+
+    // ✅ إذا كل شي تمام → حمّل البيانات
+    load()
+  }
+
+  checkAccess()
+
+}, [])
+  useEffect(() => {
+  const interval = setInterval(async () => {
+    const loginTime = Number(localStorage.getItem("login_time"))
+
+    if (!loginTime) return
+
+    // ⏱️ بعد 10 ساعات
+    if (Date.now() - loginTime > 10 * 60 * 60 * 1000) {
+      await supabase.auth.signOut()
+
+      localStorage.removeItem("otp_verified")
+
+      router.push("/login")
+    }
+  }, 10000)
+
+  return () => clearInterval(interval)
+}, [])
   const load = async () => {
 
     setLoading(true)
@@ -45,11 +86,24 @@ export default function Page() {
     if (!session) return
 
     const { data: shopData } = await supabase
-      .from("shops")
-      .select("*")
-      .eq("owner", session.user.id)
-      .single()
+   .from("shops")
+   .select("*")
+   .eq("shop_id", session.user.id)
+    .single()
 
+   // ❗ تحقق مهم جداً
+   if (!shopData) {
+    showToast("Shop not found")
+
+    await supabase.auth.signOut()
+    router.push("/login")
+    return
+    }
+   // 🔒 تحقق الاشتراك
+   if (shopData?.subscription_status !== "active") {
+    router.push("/billing")
+    return
+    }
     setShop(shopData)
 
     const { data } = await supabase
