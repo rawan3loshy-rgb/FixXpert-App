@@ -93,11 +93,8 @@ export async function GET(){
     </div>
     `
 
-    // =========================
-    // 🔥 PDF SaaS LEVEL
-    // =========================
-    // =========================
-// 🔥 PDF SaaS DARK MODE
+// =========================
+// 🔥 PDF PRODUCTION LEVEL
 // =========================
 const pdfDoc = await PDFDocument.create()
 let page = pdfDoc.addPage([600, 800])
@@ -108,63 +105,120 @@ const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 let y = 760
 
 // 🎨 BACKGROUND
-page.drawRectangle({
-  x: 0,
-  y: 0,
-  width: 600,
-  height: 800,
-  color: rgb(0.06, 0.09, 0.16) // dark
-})
+const drawBackground = () => {
+  page.drawRectangle({
+    x: 0,
+    y: 0,
+    width: 600,
+    height: 800,
+    color: rgb(0.06, 0.09, 0.16)
+  })
+}
 
-// HEADER
-page.drawText("FixXpert Bericht", {
-  x: 40,
-  y,
-  size: 20,
-  font: bold,
-  color: rgb(0.5, 0.6, 1)
-})
+// 🧠 HEADER
+const drawHeader = () => {
+  page.drawText("FixXpert Bericht", {
+    x: 40,
+    y,
+    size: 20,
+    font: bold,
+    color: rgb(0.5, 0.6, 1)
+  })
 
-y -= 25
+  y -= 25
 
-page.drawText("Daily Overview", {
-  x: 40,
-  y,
-  size: 10,
-  font,
-  color: rgb(0.6, 0.65, 0.75)
-})
+  page.drawText("Daily Overview", {
+    x: 40,
+    y,
+    size: 10,
+    font,
+    color: rgb(0.6, 0.65, 0.75)
+  })
 
-y -= 30
+  y -= 30
+}
 
-// AI BOX
-page.drawRectangle({
-  x: 40,
-  y: y - 60,
-  width: 520,
-  height: 60,
-  borderWidth: 1,
-  borderColor: rgb(0.2, 0.25, 0.35)
-})
+// 📦 AI BOX
+const drawAI = () => {
+  page.drawRectangle({
+    x: 40,
+    y: y - 60,
+    width: 520,
+    height: 60,
+    borderWidth: 1,
+    borderColor: rgb(0.2, 0.25, 0.35)
+  })
 
-page.drawText("Analyse", {
-  x: 50,
-  y: y - 20,
-  size: 12,
-  font: bold,
-  color: rgb(1, 1, 1)
-})
+  page.drawText("Analyse", {
+    x: 50,
+    y: y - 20,
+    size: 12,
+    font: bold,
+    color: rgb(1, 1, 1)
+  })
 
-page.drawText(aiText, {
-  x: 50,
-  y: y - 40,
-  size: 10,
-  font,
-  color: rgb(0.7, 0.75, 0.85),
-  maxWidth: 480
-})
+  page.drawText(aiText, {
+    x: 50,
+    y: y - 40,
+    size: 10,
+    font,
+    color: rgb(0.7, 0.75, 0.85),
+    maxWidth: 480,
+    lineHeight: 12
+  })
 
-y -= 90
+  y -= 90
+}
+
+// 📏 TEXT WRAP (مهم جداً)
+const drawMultiline = (text: string, x: number, y: number, maxWidth: number) => {
+  const words = text.split(" ")
+  let line = ""
+  let offsetY = 0
+
+  for (const word of words) {
+    const test = line + word + " "
+    const width = font.widthOfTextAtSize(test, 9)
+
+    if (width > maxWidth) {
+      page.drawText(line, {
+        x,
+        y: y - offsetY,
+        size: 9,
+        font,
+        color: rgb(0.8, 0.85, 0.9)
+      })
+      line = word + " "
+      offsetY += 12
+    } else {
+      line = test
+    }
+  }
+
+  page.drawText(line, {
+    x,
+    y: y - offsetY,
+    size: 9,
+    font,
+    color: rgb(0.8, 0.85, 0.9)
+  })
+
+  return offsetY
+}
+
+// 🎨 STATUS COLORS
+const getStatusColor = (status: string) => {
+  if (status === "ready") return rgb(0.2, 0.8, 0.4)
+  if (status === "in-progress") return rgb(0.3, 0.6, 1)
+  if (status === "waiting-parts") return rgb(1, 0.7, 0.2)
+  if (status === "pending-answer") return rgb(1, 0.5, 0.3)
+  return rgb(0.7, 0.7, 0.7)
+}
+
+// 🧱 INIT PAGE
+drawBackground()
+drawHeader()
+drawAI()
 
 // TABLE HEADER
 const headers = ["#", "Gerät", "Problem", "Status"]
@@ -190,20 +244,28 @@ page.drawLine({
 
 y -= 10
 
-// 🎨 STATUS COLORS
-const getStatusColor = (status:string) => {
-  if(status === "ready") return rgb(0.2, 0.8, 0.4)
-  if(status === "in-progress") return rgb(0.3, 0.6, 1)
-  if(status === "waiting-parts") return rgb(1, 0.7, 0.2)
-  if(status === "pending-answer") return rgb(1, 0.5, 0.3)
-  return rgb(0.7, 0.7, 0.7)
-}
-
-// ROWS
-for(const r of cleanRepairs){
+// ROWS (احترافي مع wrap + dynamic height)
+for (const r of cleanRepairs) {
 
   const status = statusMap[r.status] || "-"
 
+  const deviceHeight = drawMultiline(
+    r.device || "-",
+    170,
+    y,
+    120
+  )
+
+  const problemHeight = drawMultiline(
+    r.problem || "-",
+    300,
+    y,
+    120
+  )
+
+  const rowHeight = Math.max(deviceHeight, problemHeight)
+
+  // order number
   page.drawText(String(r.order_number), {
     x: 40,
     y,
@@ -212,22 +274,7 @@ for(const r of cleanRepairs){
     color: rgb(0.8, 0.85, 0.9)
   })
 
-  page.drawText(r.device?.slice(0,18) || "-", {
-    x: 170,
-    y,
-    size: 9,
-    font,
-    color: rgb(0.8, 0.85, 0.9)
-  })
-
-  page.drawText(r.problem?.slice(0,18) || "-", {
-    x: 300,
-    y,
-    size: 9,
-    font,
-    color: rgb(0.8, 0.85, 0.9)
-  })
-
+  // status
   page.drawText(status, {
     x: 430,
     y,
@@ -236,12 +283,14 @@ for(const r of cleanRepairs){
     color: getStatusColor(r.status)
   })
 
-  y -= 18
+  y -= (rowHeight + 18)
 
   // pagination
-  if(y < 50){
+  if (y < 60) {
     page = pdfDoc.addPage([600, 800])
     y = 760
+    drawBackground()
+    drawHeader()
   }
 }
 
