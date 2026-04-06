@@ -96,103 +96,157 @@ export async function GET(){
     // =========================
     // 🔥 PDF SaaS LEVEL
     // =========================
-    const pdfDoc = await PDFDocument.create()
-    let page = pdfDoc.addPage([600, 800])
+    // =========================
+// 🔥 PDF SaaS DARK MODE
+// =========================
+const pdfDoc = await PDFDocument.create()
+let page = pdfDoc.addPage([600, 800])
 
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
-    let y = 760
+let y = 760
 
-    const drawHeader = () => {
-      page.drawText("FixXpert Bericht", {
-        x: 40,
-        y,
-        size: 20,
-        font: bold,
-        color: rgb(0.3, 0.3, 0.9)
-      })
+// 🎨 BACKGROUND
+page.drawRectangle({
+  x: 0,
+  y: 0,
+  width: 600,
+  height: 800,
+  color: rgb(0.06, 0.09, 0.16) // dark
+})
 
-      y -= 25
+// HEADER
+page.drawText("FixXpert Bericht", {
+  x: 40,
+  y,
+  size: 20,
+  font: bold,
+  color: rgb(0.5, 0.6, 1)
+})
 
-      page.drawText("Daily Overview", {
-        x: 40,
-        y,
-        size: 10,
-        font,
-        color: rgb(0.5, 0.5, 0.5)
-      })
+y -= 25
 
-      y -= 30
-    }
+page.drawText("Daily Overview", {
+  x: 40,
+  y,
+  size: 10,
+  font,
+  color: rgb(0.6, 0.65, 0.75)
+})
 
-    drawHeader()
+y -= 30
 
-    // AI BOX
-    page.drawRectangle({
-      x: 40,
-      y: y - 50,
-      width: 520,
-      height: 50,
-      color: rgb(0.95, 0.97, 1)
-    })
+// AI BOX
+page.drawRectangle({
+  x: 40,
+  y: y - 60,
+  width: 520,
+  height: 60,
+  borderWidth: 1,
+  borderColor: rgb(0.2, 0.25, 0.35)
+})
 
-    page.drawText("Analyse:", { x: 50, y: y - 20, size: 12, font: bold })
+page.drawText("Analyse", {
+  x: 50,
+  y: y - 20,
+  size: 12,
+  font: bold,
+  color: rgb(1, 1, 1)
+})
 
-    page.drawText(aiText, {
-      x: 50,
-      y: y - 35,
-      size: 10,
-      font,
-      lineHeight: 12
-    })
+page.drawText(aiText, {
+  x: 50,
+  y: y - 40,
+  size: 10,
+  font,
+  color: rgb(0.7, 0.75, 0.85),
+  maxWidth: 480
+})
 
-    y -= 80
+y -= 90
 
-    // HEADER TABLE
-    const headers = ["#", "Gerät", "Problem", "Status"]
+// TABLE HEADER
+const headers = ["#", "Gerät", "Problem", "Status"]
 
-    headers.forEach((h, i) => {
-      page.drawText(h, {
-        x: 40 + i * 130,
-        y,
-        size: 10,
-        font: bold
-      })
-    })
+headers.forEach((h, i) => {
+  page.drawText(h, {
+    x: 40 + i * 130,
+    y,
+    size: 10,
+    font: bold,
+    color: rgb(0.6, 0.7, 1)
+  })
+})
 
-    y -= 15
+y -= 15
 
-    page.drawLine({
-      start: { x: 40, y },
-      end: { x: 560, y },
-      thickness: 1
-    })
+page.drawLine({
+  start: { x: 40, y },
+  end: { x: 560, y },
+  thickness: 1,
+  color: rgb(0.2, 0.25, 0.35)
+})
 
-    y -= 10
+y -= 10
 
-    // ROWS
-    for(const r of cleanRepairs){
+// 🎨 STATUS COLORS
+const getStatusColor = (status:string) => {
+  if(status === "ready") return rgb(0.2, 0.8, 0.4)
+  if(status === "in-progress") return rgb(0.3, 0.6, 1)
+  if(status === "waiting-parts") return rgb(1, 0.7, 0.2)
+  if(status === "pending-answer") return rgb(1, 0.5, 0.3)
+  return rgb(0.7, 0.7, 0.7)
+}
 
-      const status = statusMap[r.status] || "-"
+// ROWS
+for(const r of cleanRepairs){
 
-      page.drawText(String(r.order_number), { x: 40, y, size: 9, font })
-      page.drawText(r.device?.slice(0,18) || "-", { x: 170, y, size: 9, font })
-      page.drawText(r.problem?.slice(0,18) || "-", { x: 300, y, size: 9, font })
-      page.drawText(status, { x: 430, y, size: 9, font })
+  const status = statusMap[r.status] || "-"
 
-      y -= 18
+  page.drawText(String(r.order_number), {
+    x: 40,
+    y,
+    size: 9,
+    font,
+    color: rgb(0.8, 0.85, 0.9)
+  })
 
-      // new page
-      if(y < 50){
-        page = pdfDoc.addPage([600, 800])
-        y = 760
-        drawHeader()
-      }
-    }
+  page.drawText(r.device?.slice(0,18) || "-", {
+    x: 170,
+    y,
+    size: 9,
+    font,
+    color: rgb(0.8, 0.85, 0.9)
+  })
 
-    const pdfBytes = await pdfDoc.save()
-    const pdfBase64 = Buffer.from(pdfBytes).toString("base64")
+  page.drawText(r.problem?.slice(0,18) || "-", {
+    x: 300,
+    y,
+    size: 9,
+    font,
+    color: rgb(0.8, 0.85, 0.9)
+  })
+
+  page.drawText(status, {
+    x: 430,
+    y,
+    size: 9,
+    font,
+    color: getStatusColor(r.status)
+  })
+
+  y -= 18
+
+  // pagination
+  if(y < 50){
+    page = pdfDoc.addPage([600, 800])
+    y = 760
+  }
+}
+
+const pdfBytes = await pdfDoc.save()
+const pdfBase64 = Buffer.from(pdfBytes).toString("base64")
 
     // =========================
     // SEND EMAIL
