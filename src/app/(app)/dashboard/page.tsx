@@ -159,7 +159,7 @@ export default function Page() {
   if (loading) {
     return (
       <PageWrapper>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-24" />
           ))}
@@ -197,7 +197,7 @@ export default function Page() {
         </div>
 
         {/* 🔥 ULTRA STATS */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
 
           <StatCard title={t("total")} value={stats.total} icon="📦" glow="indigo" />
           <StatCard title={t("today")} value={stats.today} icon="⚡" glow="blue" />
@@ -217,39 +217,61 @@ export default function Page() {
           ].map((item, i) => (
             <motion.div key={i} whileHover={{ scale: 1.05 }} onClick={()=>router.push(item.path)}>
               <Card>
-                <div className="text-2xl">{item.icon}</div>
-                <p className="mt-2 text-sm text-slate-400">{item.label}</p>
-              </Card>
+             <div className="text-xl md:text-2xl">{item.icon}</div>
+
+             <p className="mt-2 text-xs md:text-sm text-slate-400">
+             {item.label}
+             </p>
+             </Card>
             </motion.div>
           ))}
         </div>
 
         {/* CHARTS */}
         <div className="grid md:grid-cols-2 gap-6">
-          <Card><RepairChart repairs={repairs} /></Card>
-          <Card><StatusChart data={statusData} /></Card>
-        </div>
 
-        {/* RECENT */}
-        <div>
+         <Card>
+         <div className="w-full h-[250px] md:h-[350px]">
+          <RepairChart repairs={repairs} />
+         </div>
+         </Card>
+
+         <Card>
+         <div className="w-full h-[250px] md:h-[350px]">
+         <StatusChart data={statusData} />
+         </div>
+         </Card>
+
+         </div>
+
+          {/* RECENT */}
+         <div>
           <h2 className="text-lg font-semibold mb-3 text-slate-300">
-            {t("recentRepairs")}
+          {t("recentRepairs")}
           </h2>
 
-          <div className="space-y-3">
-            {repairs.slice(0,5).map(r => (
-              <div key={r.id} className="bg-slate-900/60 border border-white/10 p-4 rounded-xl flex justify-between">
-                <div>
-                  <p className="font-semibold">{r.customer}</p>
-                  <p className="text-xs text-slate-400">{r.device}</p>
-                </div>
+         <div className="space-y-3">
+         {repairs.slice(0,5).map(r => (
+          <div 
+          key={r.id}
+          className="bg-slate-900/60 border border-white/10 p-3 md:p-4 rounded-xl flex justify-between items-center"
+          >
 
-                <div className="text-right text-xs text-slate-400">
-                  {tStatus(r.status)}
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* LEFT */}
+          <div className="min-w-0">
+          <p className="font-semibold truncate">{r.customer}</p>
+          <p className="text-xs md:text-sm text-slate-400 truncate">
+          {r.device}
+          </p>
+         </div>
+
+         {/* RIGHT */}
+         <div className="text-right text-xs md:text-sm text-slate-400">
+         {tStatus(r.status)}
+         </div>
+         </div>
+         ))}
+        </div>
         </div>
 
         <RepairPipeline repairs={repairs} />
@@ -282,7 +304,7 @@ function StatCard({ title, value, icon, glow }: any) {
   return(
     <motion.div
       whileHover={{ scale: 1.05 }}
-      className={`p-4 rounded-xl border border-white/10 bg-slate-900 ${glowMap[glow]}`}
+      className={`p-3 md:p-4 rounded-xl border border-white/10 bg-slate-900 ${glowMap[glow]}`}
     >
       <div className="flex justify-between items-center">
         <span className="text-sm text-slate-400">{title}</span>
