@@ -257,23 +257,23 @@ export async function GET(){
     // =========================
     // PDF GENERATE
     // =========================
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox"]
-    })
+    //const browser = await puppeteer.launch({
+      //headless: true,
+     // args: ["--no-sandbox"]
+   // })
 
-    const page = await browser.newPage()
+   // const page = await browser.newPage()
 
-    await page.setContent(pdfHtml, { waitUntil: "networkidle0" })
+   // await page.setContent(pdfHtml, { waitUntil: "networkidle0" })
 
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true
-    })
+    //const pdfBuffer = await page.pdf({
+    //  format: "A4",
+     // printBackground: true
+   // })
 
-    await browser.close()
+    //await browser.close()
 
-    const pdfBase64 = Buffer.from(pdfBuffer).toString("base64")
+    //const pdfBase64 = Buffer.from(pdfBuffer).toString("base64")
 
     // =========================
     // SEND EMAIL
@@ -285,12 +285,7 @@ export async function GET(){
         to: shop.email,
         subject: "📊 Täglicher Bericht",
         html,
-        attachments: [
-          {
-            filename: "report.pdf",
-            content: pdfBase64
-          }
-        ]
+        
       })
 
       console.log("SENT:", shop.email)
