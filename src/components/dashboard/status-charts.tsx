@@ -65,8 +65,8 @@ export default function StatusChart({ data }: Props) {
             data={chartData}
             dataKey="value"
             nameKey="name"
-            innerRadius={70}
-            outerRadius={95}
+            innerRadius={60}
+            outerRadius={75}
             paddingAngle={3}
             className="md:scale-110 lg:scale-125"
             onClick={(entry:any) => {
