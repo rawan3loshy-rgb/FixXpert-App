@@ -111,7 +111,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="w-full max-w-[1400px] mx-auto space-y-6">
 
             {/* 🔥 TOPBAR */}
-            <div className="glass card flex justify-between items-center flex-wrap gap-3 px-4 py-3">
+            <div className="glass card flex justify-between items-center flex-wrap gap-3 px-4 py-3 relative z-0 isolate">
 
               {/* LEFT */}
               <div className="flex items-center gap-3">

@@ -61,7 +61,7 @@ export function UserMenu() {
   const avatarLetter = email ? email[0].toUpperCase() : "👤"
 
   return (
-    <div ref={ref} className="relative z-[9999]">
+    <div ref={ref} className="relative z-[99999]">
 
       {/* Avatar */}
       <div
