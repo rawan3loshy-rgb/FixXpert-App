@@ -28,7 +28,6 @@ export default function StatusChart({ data }: Props) {
 
   const router = useRouter()
 
-  // 📊 FORMAT DATA
   const chartData = Object.entries(data).map(([name, value]) => ({
     name,
     value
@@ -38,16 +37,16 @@ export default function StatusChart({ data }: Props) {
 
   return (
 
-    <div className="relative bg-slate-900/60 border border-white/10 p-5 rounded-xl h-[220px] md:h-[280px]">
+    <div className="relative bg-slate-900/60 border border-white/10 p-5 rounded-xl">
 
       {/* TITLE */}
       <p className="text-sm text-slate-400 mb-4">
         {t("statusDistribution")}
       </p>
 
-      {/* 🔥 CENTER KPI */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none translate-y-4 md:translate-y-0">
-        <div className="text-center">
+      {/* ✅ CENTER KPI */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="text-center translate-y-4 md:translate-y-0">
           <p className="text-2xl md:text-4xl lg:text-5xl font-bold text-white">
             {total}
           </p>
@@ -57,52 +56,59 @@ export default function StatusChart({ data }: Props) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height="100%">
+      {/* ✅ CHART CONTAINER (IMPORTANT) */}
+      <div className="w-full h-[220px] md:h-[260px] lg:h-[300px]">
 
-        <PieChart>
+        <ResponsiveContainer width="100%" height="100%">
 
-          <Pie
-            data={chartData}
-            dataKey="value"
-            nameKey="name"
-            innerRadius={50}
-            outerRadius={70}
-            paddingAngle={3}
-          
-            onClick={(entry:any) => {
-              if (!entry?.name) return
-              router.push(`/repairs?status=${entry.name}`)
-            }}
-          >
+          <PieChart>
 
-            {chartData.map((entry, index) => (
-              <Cell
-                key={index}
-                fill={COLORS[entry.name] || "#8884d8"}
-                className="cursor-pointer hover:opacity-80 transition"
-              />
-            ))}
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={90}
+              paddingAngle={3}
+              isAnimationActive
+              animationDuration={800}
+              onClick={(entry:any) => {
+                if (!entry?.name) return
+                router.push(`/repairs?status=${entry.name}`)
+              }}
+            >
 
-          </Pie>
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={index}
+                  fill={COLORS[entry.name] || "#8884d8"}
+                  className="cursor-pointer hover:opacity-80 transition"
+                />
+              ))}
 
-          {/* TOOLTIP */}
-          <Tooltip
-            contentStyle={{
-              background: "#020617",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "10px",
-              color: "#fff",
-              fontSize: "12px"
-            }}
-            formatter={(value, name) => [
-              value as number,
-              tStatus(name as string)
-            ]}
-          />
+            </Pie>
 
-        </PieChart>
+            <Tooltip
+              contentStyle={{
+                background: "#020617",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "10px",
+                color: "#fff",
+                fontSize: "12px"
+              }}
+              formatter={(value, name) => [
+                value as number,
+                tStatus(name as string)
+              ]}
+            />
 
-      </ResponsiveContainer>
+          </PieChart>
+
+        </ResponsiveContainer>
+
+      </div>
 
     </div>
   )
