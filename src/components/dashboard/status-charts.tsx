@@ -46,12 +46,12 @@ export default function StatusChart({ data }: Props) {
       </p>
 
       {/* 🔥 CENTER KPI */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none translate-y-4 md:translate-y-0">
         <div className="text-center">
-          <p className="text-3xl font-bold text-white">
+          <p className="text-2xl md:text-4xl lg:text-5xl font-bold text-white">
             {total}
           </p>
-          <p className="text-xs text-slate-400">
+          <p className="text-[10px] md:text-sm text-slate-400">
             {t("totalRepairs")}
           </p>
         </div>
@@ -68,6 +68,7 @@ export default function StatusChart({ data }: Props) {
             innerRadius={50}
             outerRadius={70}
             paddingAngle={3}
+            className="md:scale-110 lg:scale-125"
             onClick={(entry:any) => {
               if (!entry?.name) return
               router.push(`/repairs?status=${entry.name}`)
