@@ -65,8 +65,8 @@ export default function StatusChart({ data }: Props) {
             data={chartData}
             dataKey="value"
             nameKey="name"
-            innerRadius={70}
-            outerRadius={95}
+            innerRadius={50}
+            outerRadius={70}
             paddingAngle={3}
             onClick={(entry:any) => {
               if (!entry?.name) return
