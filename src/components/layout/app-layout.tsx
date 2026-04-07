@@ -97,6 +97,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               onClick={() => setCollapsed(prev => !prev)}
               className="p-2 rounded-lg hover:bg-white/10 transition"
             >
+              {collapsed ? "➡️" : "⬅️"}
             </button>
           </div>
 
