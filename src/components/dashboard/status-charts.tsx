@@ -35,6 +35,9 @@ export default function StatusChart({ data }: Props) {
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0)
 
+  const isMobile =
+  typeof window !== "undefined" && window.innerWidth < 768
+  
   return (
 
     <div className="relative bg-slate-900/60 border border-white/10 p-5 rounded-xl">
@@ -46,8 +49,8 @@ export default function StatusChart({ data }: Props) {
 
       {/* ✅ CENTER KPI */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="text-center translate-y-4 md:translate-y-0">
-          <p className="text-2xl md:text-4xl lg:text-5xl font-bold text-white">
+        <div className="text-center translate-y-4 md:translate-y-0 lg:translate-y-0">
+          <p className="text-2xl md:text-4xl lg:text-6xl font-bold text-white">
             {total}
           </p>
           <p className="text-[10px] md:text-sm text-slate-400">
@@ -57,7 +60,7 @@ export default function StatusChart({ data }: Props) {
       </div>
 
       {/* ✅ CHART CONTAINER (IMPORTANT) */}
-      <div className="w-full h-[220px] md:h-[260px] lg:h-[300px]">
+      <div className="w-full h-[220px] md:h-[280px] lg:h-[340px] xl:h-[380px]">
 
         <ResponsiveContainer width="100%" height="100%">
 
@@ -69,8 +72,8 @@ export default function StatusChart({ data }: Props) {
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={60}
-              outerRadius={90}
+                innerRadius={isMobile ? 60 : 100}
+                outerRadius={isMobile ? 90 : 140}
               paddingAngle={3}
               isAnimationActive
               animationDuration={800}
