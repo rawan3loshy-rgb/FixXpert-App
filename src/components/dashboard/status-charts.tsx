@@ -49,7 +49,7 @@ export default function StatusChart({ data }: Props) {
 
       {/* ✅ CENTER KPI */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="text-center translate-y-4 md:translate-y-0 lg:translate-y-0">
+        <div className="text-center translate-y-4 md:translate-y-0 lg:translate-y-1">
           <p className="text-2xl md:text-4xl lg:text-6xl font-bold text-white">
             {total}
           </p>

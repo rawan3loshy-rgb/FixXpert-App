@@ -228,18 +228,18 @@ export default function Page() {
         </div>
 
         {/* CHARTS */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
          <Card className="p-4">
-           <div className="h-[220px] md:h-[300px]">
+           <div className="lg:col-span-2">
            <RepairChart repairs={repairs} />
-           </div>
+          </div>
           </Card>
 
          <Card className="p-4">
-            <div className="h-[220px] md:h-[300px] flex items-center justify-center">
-            <StatusChart data={statusData} />
-            </div>
+            <div className="lg:col-span-1">
+           <StatusChart data={statusData} />
+           </div>
           </Card>
 
          </div>
