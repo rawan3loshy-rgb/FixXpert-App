@@ -32,7 +32,7 @@ export default function RepairPipeline({ repairs }: { repairs: any[] }) {
         {t("repairPipeline")}
       </h3>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
 
         {stages.map(stage => {
 
