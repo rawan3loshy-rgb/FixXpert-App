@@ -275,7 +275,7 @@ export default function Page() {
         </div>
 
         <div className="overflow-x-auto">
-        <div className="w-full">
+        <div className="min-w-[600px]">
        <RepairPipeline repairs={repairs} />
        </div>
        </div>

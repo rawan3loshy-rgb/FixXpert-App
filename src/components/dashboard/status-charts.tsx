@@ -57,7 +57,7 @@ export default function StatusChart({ data }: Props) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={250}>
 
         <PieChart>
 
