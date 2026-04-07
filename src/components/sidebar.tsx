@@ -29,7 +29,7 @@ export default function Sidebar({ collapsed }: Props){
 
         {!collapsed && (
           <span className="font-bold text-lg tracking-wide text-white">
-            ⚡ FixXpert
+            ⚡ FixXpert App
           </span>
         )}
 
