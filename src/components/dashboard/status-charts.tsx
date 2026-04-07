@@ -38,7 +38,7 @@ export default function StatusChart({ data }: Props) {
 
   return (
 
-    <div className="relative bg-slate-900/60 border border-white/10 p-5 rounded-xl">
+    <div className="relative bg-slate-900/60 border border-white/10 p-5 rounded-xl h-[220px] md:h-[280px]">
 
       {/* TITLE */}
       <p className="text-sm text-slate-400 mb-4">
@@ -65,8 +65,8 @@ export default function StatusChart({ data }: Props) {
             data={chartData}
             dataKey="value"
             nameKey="name"
-            innerRadius={70}
-            outerRadius={95}
+            innerRadius={50}
+            outerRadius={70}
             paddingAngle={3}
             onClick={(entry:any) => {
               if (!entry?.name) return

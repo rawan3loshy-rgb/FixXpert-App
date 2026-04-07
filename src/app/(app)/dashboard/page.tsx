@@ -230,14 +230,14 @@ export default function Page() {
         {/* CHARTS */}
         <div className="grid md:grid-cols-2 gap-6">
 
-         <Card className="p-4 flex flex-col justify-start">
-           <div className="h-[250px] md:h-[300px]">
+         <Card className="p-4">
+           <div className="h-[220px] md:h-[300px]">
            <RepairChart repairs={repairs} />
            </div>
           </Card>
 
-         <Card className="p-4 flex flex-col justify-start">
-            <div className="h-[250px] md:h-[300px] flex items-center justify-center">
+         <Card className="p-4">
+            <div className="h-[220px] md:h-[300px] flex items-center justify-center">
             <StatusChart data={statusData} />
             </div>
           </Card>

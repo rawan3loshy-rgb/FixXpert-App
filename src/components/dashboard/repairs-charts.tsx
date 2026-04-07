@@ -65,7 +65,7 @@ export default function RepairsChart({ repairs }: { repairs: any[] }) {
       </div>
 
       {/* CHART */}
-      <div className="w-full" style={{ height: 320 }}>
+      <div className="w-full h-[200px] md:h-[300px]">
 
         <ResponsiveContainer width="100%" height="100%">
 
