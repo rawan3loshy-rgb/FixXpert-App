@@ -3,25 +3,19 @@
 import { useEffect, useState, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { motion, AnimatePresence } from "framer-motion"
+import { createPortal } from "react-dom"
 
 export function UserMenu() {
 
   const [open, setOpen] = useState(false)
   const [email, setEmail] = useState("")
   const [shopId, setShopId] = useState("")
-  const [isMobile, setIsMobile] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   const ref = useRef<HTMLDivElement>(null)
 
-  // 🔥 detect mobile
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
-    check()
-    window.addEventListener("resize", check)
-    return () => window.removeEventListener("resize", check)
-  }, [])
-
-  useEffect(() => {
+    setMounted(true)
     loadUser()
   }, [])
 
@@ -60,79 +54,91 @@ export function UserMenu() {
 
   const avatarLetter = email ? email[0].toUpperCase() : "👤"
 
-  return (
-    <div ref={ref} className="relative z-[99999]">
+  if (!mounted) return null
 
+  return (
+    <>
       {/* Avatar */}
-      <div
-        onClick={() => setOpen(!open)}
-        className="
-          w-10 h-10 rounded-full
-          bg-indigo-600 hover:bg-indigo-500
-          transition flex items-center justify-center
-          cursor-pointer font-bold
-          shadow-lg
-        "
-      >
-        {avatarLetter}
+      <div ref={ref} className="relative z-10">
+        <div
+          onClick={() => setOpen(!open)}
+          className="
+            w-10 h-10 rounded-full
+            bg-indigo-600 hover:bg-indigo-500
+            transition flex items-center justify-center
+            cursor-pointer font-bold
+            shadow-lg
+          "
+        >
+          {avatarLetter}
+        </div>
       </div>
 
-      {/* Dropdown */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.96 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+      {/* 🔥 PORTAL DROPDOWN */}
+      {createPortal(
+        <AnimatePresence>
+          {open && (
+            <>
+              {/* Overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setOpen(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[99998]"
+              />
 
-            className={`
-              ${isMobile 
-                ? "fixed top-20 right-4 left-4"
-                : "absolute right-0 mt-3 w-72"
-              }
+              {/* Menu */}
+              <motion.div
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
 
-              z-[9999]
-              bg-slate-900/95 backdrop-blur-xl
-              border border-white/10
-              rounded-2xl p-5
-              shadow-[0_20px_60px_rgba(0,0,0,0.6)]
-            `}
-          >
+                className="
+                  fixed top-20 right-4 left-4 md:left-auto md:w-72
+                  z-[99999]
+                  bg-slate-900/95 backdrop-blur-xl
+                  border border-white/10
+                  rounded-2xl p-5
+                  shadow-[0_30px_80px_rgba(0,0,0,0.7)]
+                "
+              >
 
-            {/* EMAIL */}
-            <p className="text-xs text-slate-400 mb-1">Email</p>
-            <p className="text-sm mb-4 break-all text-white">
-              {email}
-            </p>
+                {/* EMAIL */}
+                <p className="text-xs text-slate-400 mb-1">Email</p>
+                <p className="text-sm mb-4 break-all text-white">
+                  {email}
+                </p>
 
-            {/* SHOP */}
-            <p className="text-xs text-slate-400 mb-1">Shop ID</p>
-            <p className="text-xs text-slate-300 mb-4 break-all">
-              {shopId}
-            </p>
+                {/* SHOP */}
+                <p className="text-xs text-slate-400 mb-1">Shop ID</p>
+                <p className="text-xs text-slate-300 mb-4 break-all">
+                  {shopId}
+                </p>
 
-            {/* DIVIDER */}
-            <div className="h-px bg-white/10 mb-4" />
+                {/* Divider */}
+                <div className="h-px bg-white/10 mb-4" />
 
-            {/* LOGOUT */}
-            <button
-              onClick={logout}
-              className="
-                w-full py-2
-                bg-red-500 hover:bg-red-600
-                transition rounded-xl
-                text-sm font-semibold
-                shadow-md
-              "
-            >
-              Logout
-            </button>
+                {/* Logout */}
+                <button
+                  onClick={logout}
+                  className="
+                    w-full py-2
+                    bg-red-500 hover:bg-red-600
+                    transition rounded-xl
+                    text-sm font-semibold
+                  "
+                >
+                  Logout
+                </button>
 
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-    </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </>
   )
 }
