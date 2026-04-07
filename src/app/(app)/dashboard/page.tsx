@@ -230,13 +230,13 @@ export default function Page() {
         {/* CHARTS */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-         <Card className="p-4">
+         <Card>
            <div className="lg:col-span-2">
            <RepairChart repairs={repairs} />
           </div>
           </Card>
 
-         <Card className="p-4">
+         <Card>
             <div className="lg:col-span-1">
            <StatusChart data={statusData} />
            </div>
