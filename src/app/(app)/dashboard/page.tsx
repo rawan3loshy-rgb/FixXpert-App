@@ -230,17 +230,17 @@ export default function Page() {
         {/* CHARTS */}
         <div className="grid md:grid-cols-2 gap-6">
 
-         <Card>
-         <div className="w-full h-[250px] md:h-[350px]">
-          <RepairChart repairs={repairs} />
-         </div>
-         </Card>
+         <Card className="p-4 flex flex-col justify-start">
+           <div className="h-[250px] md:h-[300px]">
+           <RepairChart repairs={repairs} />
+           </div>
+          </Card>
 
-         <Card>
-         <div className="w-full h-[250px] md:h-[350px]">
-         <StatusChart data={statusData} />
-         </div>
-         </Card>
+         <Card className="p-4 flex flex-col justify-start">
+            <div className="h-[250px] md:h-[300px] flex items-center justify-center">
+            <StatusChart data={statusData} />
+            </div>
+          </Card>
 
          </div>
 
