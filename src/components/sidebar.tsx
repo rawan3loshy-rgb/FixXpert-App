@@ -2,15 +2,16 @@
 
 import { useRouter, usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { useState } from "react"
 import { t } from "@/lib/text"
 
-export default function Sidebar(){
- 
+type Props = {
+  collapsed: boolean
+}
+
+export default function Sidebar({ collapsed }: Props){
+
   const router = useRouter()
   const pathname = usePathname()
-
-  const [collapsed,setCollapsed] = useState(false)
 
   const menu = [
     { label: t("dashboard"), icon: "🏠", path: "/dashboard" },
@@ -18,34 +19,24 @@ export default function Sidebar(){
     { label: t("addRepair"), icon: "➕", path: "/add-repair" },
     { label: t("pipeline"), icon: "📊", path: "/pipeline" },
     { label: t("track"), icon: "🔍", path: "/track" },
-  
   ]
 
   return(
-    <div className={`
-      min-h-screen transition-all duration-300
-      ${collapsed ? "w-20" : "w-64"}
-      glass border-r border-white/10 p-3
-    `}>
+    <div className="h-full flex flex-col p-3">
 
       {/* 🔥 HEADER */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-center md:justify-between mb-6">
 
         {!collapsed && (
-          <span className="font-bold text-lg">⚡ FixXpert</span>
+          <span className="font-bold text-lg tracking-wide text-white">
+            ⚡ FixXpert
+          </span>
         )}
-
-        <button
-          onClick={()=>setCollapsed(!collapsed)}
-          className="btn glass w-8 h-8 flex items-center justify-center rounded-lg"
-        >
-          {collapsed ? "➡️" : "⬅️"}
-        </button>
 
       </div>
 
       {/* MENU */}
-      <div className="space-y-2">
+      <div className="space-y-2 flex-1">
 
         {menu.map(item=>{
           const active = pathname === item.path
@@ -53,19 +44,32 @@ export default function Sidebar(){
           return(
             <motion.div
               key={item.path}
-              whileHover={{scale:1.05}}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
               onClick={()=>router.push(item.path)}
               className={`
-                flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer
-                card glow
-                ${active ? "bg-indigo-600 text-white" : "bg-white/5"}
+                flex items-center
+                ${collapsed ? "justify-center" : "gap-3"}
+                px-3 py-3 rounded-xl cursor-pointer
+                transition-all duration-200
+
+                ${active 
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" 
+                  : "bg-white/5 hover:bg-white/10 text-slate-300"
+                }
               `}
             >
-              <span>{item.icon}</span>
 
+              {/* ICON */}
+              <span className="text-lg">{item.icon}</span>
+
+              {/* LABEL */}
               {!collapsed && (
-                <span>{item.label}</span>
+                <span className="text-sm font-medium tracking-wide">
+                  {item.label}
+                </span>
               )}
+
             </motion.div>
           )
         })}

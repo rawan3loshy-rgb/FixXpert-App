@@ -19,8 +19,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [mounted,setMounted] = useState(false)
   const [shop, setShop] = useState<any>(null)
 
-  // 🔥 Sidebar state
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  // 🔥 SIDEBAR STATES
+  const [sidebarOpen, setSidebarOpen] = useState(false) // mobile
+  const [collapsed, setCollapsed] = useState(false) // desktop
+  const [hovered, setHovered] = useState(false) // 🔥 Notion hover
 
   useEffect(()=>{
     setMounted(true)
@@ -35,14 +37,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   if(!mounted) return null
 
+  const isExpanded = !collapsed || hovered
+
   return(
     <ProtectedRoute>
 
-      {/* 🔥 MOBILE SIDEBAR (Framer Style) */}
+      {/* 📱 MOBILE SIDEBAR */}
       <div
         className={`
           fixed inset-0 z-50 flex
-          transition-all duration-300
           ${sidebarOpen ? "pointer-events-auto" : "pointer-events-none"}
         `}
       >
@@ -63,20 +66,43 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             relative h-full w-[260px]
             bg-slate-900/95 backdrop-blur-xl
             border-r border-white/10
-            transform transition-transform duration-300 ease-out
+            transform transition-transform duration-300
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           `}
         >
-          <Sidebar/>
+          <Sidebar collapsed={false} />
         </div>
+
       </div>
 
-      {/* 🔥 MAIN LAYOUT */}
-      <div className="flex min-h-screen relative">
+      {/* 💻 MAIN LAYOUT */}
+      <div className="flex min-h-screen">
 
-        {/* 💻 DESKTOP SIDEBAR */}
-        <div className="hidden md:block w-[260px] shrink-0 border-r border-white/5">
-          <Sidebar/>
+        {/* 🔥 DESKTOP SIDEBAR (NOTION STYLE) */}
+        <div
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          className={`
+            hidden md:flex flex-col
+            transition-all duration-300 ease-out
+            ${isExpanded ? "w-[240px]" : "w-[70px]"}
+            bg-slate-900/70 backdrop-blur-xl
+            border-r border-white/5
+          `}
+        >
+
+          {/* 🔥 COLLAPSE BUTTON */}
+          <div className="p-2 flex justify-end">
+            <button
+              onClick={() => setCollapsed(prev => !prev)}
+              className="p-2 rounded-lg hover:bg-white/10 transition"
+            >
+              {collapsed ? "➡️" : "⬅️"}
+            </button>
+          </div>
+
+          <Sidebar collapsed={!isExpanded} />
+
         </div>
 
         {/* 📦 MAIN */}
@@ -85,12 +111,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="w-full max-w-[1400px] mx-auto space-y-6">
 
             {/* 🔥 TOPBAR */}
-            <div className="glass card flex justify-between items-center flex-wrap gap-3 px-4 py-3 relative z-10">
+            <div className="glass card flex justify-between items-center flex-wrap gap-3 px-4 py-3">
 
               {/* LEFT */}
               <div className="flex items-center gap-3">
 
-                {/* ☰ MOBILE MENU */}
+                {/* ☰ MOBILE */}
                 <button
                   className="md:hidden text-xl text-white"
                   onClick={() => setSidebarOpen(true)}
@@ -108,7 +134,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               {/* RIGHT */}
               <div className="flex items-center gap-3">
 
-                {/* PLAN */}
                 <div className="hidden sm:block text-xs text-slate-400 text-right">
                   <p>Plan</p>
                   <p className="text-white font-semibold">
@@ -132,27 +157,26 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <div className="glass flex rounded-xl p-1">
                   <button 
                     onClick={()=>changeLang("en")} 
-                    className={`px-3 py-1 rounded transition ${lang==="en" && "bg-indigo-600"}`}
+                    className={`px-3 py-1 rounded ${lang==="en" && "bg-indigo-600"}`}
                   >
                     EN
                   </button>
 
                   <button 
                     onClick={()=>changeLang("de")} 
-                    className={`px-3 py-1 rounded transition ${lang==="de" && "bg-indigo-600"}`}
+                    className={`px-3 py-1 rounded ${lang==="de" && "bg-indigo-600"}`}
                   >
                     DE
                   </button>
                 </div>
 
-                {/* USER */}
                 <UserMenu/>
 
               </div>
 
             </div>
 
-            {/* 🔥 CONTENT (Smooth appearance) */}
+            {/* CONTENT */}
             <div className="glass card p-4 md:p-6 transition-all duration-300">
               {children}
             </div>
