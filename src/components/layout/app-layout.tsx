@@ -19,7 +19,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [mounted,setMounted] = useState(false)
   const [shop, setShop] = useState<any>(null)
 
-  // 🔥 NEW: sidebar mobile
+  // 🔥 Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(()=>{
@@ -38,46 +38,61 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return(
     <ProtectedRoute>
 
-      {/* 📱 MOBILE SIDEBAR */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 flex">
+      {/* 🔥 MOBILE SIDEBAR (Framer Style) */}
+      <div
+        className={`
+          fixed inset-0 z-50 flex
+          transition-all duration-300
+          ${sidebarOpen ? "pointer-events-auto" : "pointer-events-none"}
+        `}
+      >
 
-          {/* Overlay */}
-          <div
-            className="absolute inset-0 bg-black/60"
-            onClick={() => setSidebarOpen(false)}
-          />
+        {/* Overlay */}
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className={`
+            absolute inset-0 bg-black/60 backdrop-blur-sm
+            transition-opacity duration-300
+            ${sidebarOpen ? "opacity-100" : "opacity-0"}
+          `}
+        />
 
-          {/* Sidebar */}
-          <div className="relative w-64 bg-slate-900 p-4">
-            <Sidebar/>
-          </div>
-
+        {/* Sidebar */}
+        <div
+          className={`
+            relative h-full w-[260px]
+            bg-slate-900/95 backdrop-blur-xl
+            border-r border-white/10
+            transform transition-transform duration-300 ease-out
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          `}
+        >
+          <Sidebar/>
         </div>
-      )}
+      </div>
 
-      {/* 🔥 LAYOUT */}
-      <div className="flex flex-col md:flex-row min-h-screen">
+      {/* 🔥 MAIN LAYOUT */}
+      <div className="flex min-h-screen relative">
 
         {/* 💻 DESKTOP SIDEBAR */}
-        <div className="hidden md:block">
+        <div className="hidden md:block w-[260px] shrink-0 border-r border-white/5">
           <Sidebar/>
         </div>
 
         {/* 📦 MAIN */}
-        <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden">
 
           <div className="w-full max-w-[1400px] mx-auto space-y-6">
 
             {/* 🔥 TOPBAR */}
-            <div className="glass card flex justify-between items-center flex-wrap gap-3 px-4 py-3 relative z-10"> 
+            <div className="glass card flex justify-between items-center flex-wrap gap-3 px-4 py-3 relative z-10">
 
               {/* LEFT */}
               <div className="flex items-center gap-3">
 
                 {/* ☰ MOBILE MENU */}
                 <button
-                  className="md:hidden text-xl"
+                  className="md:hidden text-xl text-white"
                   onClick={() => setSidebarOpen(true)}
                 >
                   ☰
@@ -93,7 +108,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               {/* RIGHT */}
               <div className="flex items-center gap-3">
 
-                {/* 🔥 EXPIRY DATE */}
+                {/* PLAN */}
                 <div className="hidden sm:block text-xs text-slate-400 text-right">
                   <p>Plan</p>
                   <p className="text-white font-semibold">
@@ -117,14 +132,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <div className="glass flex rounded-xl p-1">
                   <button 
                     onClick={()=>changeLang("en")} 
-                    className={`px-3 py-1 rounded ${lang==="en" && "bg-indigo-600"}`}
+                    className={`px-3 py-1 rounded transition ${lang==="en" && "bg-indigo-600"}`}
                   >
                     EN
                   </button>
 
                   <button 
                     onClick={()=>changeLang("de")} 
-                    className={`px-3 py-1 rounded ${lang==="de" && "bg-indigo-600"}`}
+                    className={`px-3 py-1 rounded transition ${lang==="de" && "bg-indigo-600"}`}
                   >
                     DE
                   </button>
@@ -137,8 +152,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
             </div>
 
-            {/* CONTENT */}
-            <div className="glass card p-4 md:p-6">
+            {/* 🔥 CONTENT (Smooth appearance) */}
+            <div className="glass card p-4 md:p-6 transition-all duration-300">
               {children}
             </div>
 
