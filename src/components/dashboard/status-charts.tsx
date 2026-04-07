@@ -68,7 +68,7 @@ export default function StatusChart({ data }: Props) {
             innerRadius={50}
             outerRadius={70}
             paddingAngle={3}
-            className="md:scale-110 lg:scale-125"
+          
             onClick={(entry:any) => {
               if (!entry?.name) return
               router.push(`/repairs?status=${entry.name}`)
