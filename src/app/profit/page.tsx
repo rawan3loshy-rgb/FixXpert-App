@@ -218,7 +218,7 @@ export default function ProfitPage(){
   return(
     <PageWrapper>
 
-      {!unlocked && shop && (
+      {!unlocked && (
         <PinModal
           correctPin={shop?.profit_pin}
           onSuccess={unlock}
