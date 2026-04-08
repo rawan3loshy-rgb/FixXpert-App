@@ -50,31 +50,54 @@ export default function ProfitPage(){
   // =========================
   // INIT + REALTIME
   // =========================
- useEffect(()=>{
+useEffect(()=>{
 
-  if(!shop?.id) return // 🔥 مهم جداً
+  let channel:any
 
-  const channel = supabase
-    .channel("repairs-live")
-    .on(
-      "postgres_changes",
-      { 
-        event: "*", 
-        schema: "public", 
-        table: "repairs",
-        filter: `shop_id=eq.${shop.id}` // ✅ الآن صحيح
-      },
-      () => {
-        load()
-      }
-    )
-    .subscribe()
+  const init = async () => {
 
-  return () => {
-    supabase.removeChannel(channel)
+    setMounted(true)
+
+    await load() // 🔥 أول شي نجيب shop
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if(!session) return
+
+    const { data: shopData } = await supabase
+      .from("shops")
+      .select("id")
+      .eq("shop_id", session.user.id)
+      .maybeSingle()
+
+    if(!shopData?.id) return
+
+    // 🔥 الآن نعمل realtime بعد ما صار في shop.id
+    channel = supabase
+      .channel("repairs-live")
+      .on(
+        "postgres_changes",
+        { 
+          event: "*", 
+          schema: "public", 
+          table: "repairs",
+          filter: `shop_id=eq.${shopData.id}`
+        },
+        () => {
+          load()
+        }
+      )
+      .subscribe()
   }
 
-},[shop?.id])
+  init()
+
+  return () => {
+    if(channel){
+      supabase.removeChannel(channel)
+    }
+  }
+
+},[])
 
   useEffect(()=>{
     if(mounted){
