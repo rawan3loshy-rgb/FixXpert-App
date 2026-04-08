@@ -39,7 +39,7 @@ export default function EditRepair(){
   const [returned,setReturned] = useState(false)
   const [pickupTime,setPickupTime] = useState("")
   const [description,setDescription] = useState("")
-
+  const createdDate = originalRepair?.created_at? new Date(originalRepair.created_at).toLocaleDateString(): ""
   // =========================
   // 🔥 STATUS RULES
   // =========================
@@ -178,16 +178,27 @@ export default function EditRepair(){
         >
           ← {t("backToRepairs") || "Back to Repairs"}
         </button>
-          <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-          {t("edit")}
 
-           <span className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">
-           #{originalRepair?.order_number}
-           </span>
-           </h1>
+        <div className="mb-6">
 
+         <h1 className="text-3xl font-bold flex items-center gap-3">
+         {t("edit")}
+         <span className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">
+          #{originalRepair?.order_number}
+         </span>
+         </h1>
+
+         {/* 📅 DATE */}
+         {createdDate && (
+         <p className="text-sm text-slate-400 mt-2">
+          📅 {createdDate}
+          </p>
+         )}
+
+        </div>
+          
         <form onSubmit={handelUpdate} className="space-y-6">
-
+         
           {/* CUSTOMER */}
           <Card>
             <p className="text-xs text-slate-400">{t("customerLabel")}</p>
