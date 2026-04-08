@@ -39,7 +39,7 @@ export default function PrintPage() {
 
   if (!repair) return null
 
-  const trackUrl = `http://localhost:3000/track?order=${repair.order_number}`
+  const qrValue = `${process.env.NEXT_PUBLIC_APP_URL}/track/${repair.order_number}`
 
   const safe = (val: any) => {
     if (!val) return "Nicht angegeben"
@@ -60,6 +60,9 @@ export default function PrintPage() {
   }
 
   const page = getPageSize()
+  const trackUrl = repair
+  ? `${process.env.NEXT_PUBLIC_APP_URL}/track/${repair.order_number}`
+  : ""
 
   return (
     <div className={`print-container flex justify-center bg-gray-200 print:bg-white`}>
@@ -207,7 +210,7 @@ export default function PrintPage() {
           </div>
 
           <div className="text-center">
-            <QRCode value={trackUrl} size={90} />
+            <QRCode value={qrValue} size={90} />
             <p className="text-xs mt-2">
               {t("trackRepair", "de")}
             </p>
