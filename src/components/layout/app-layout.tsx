@@ -24,6 +24,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false) // desktop
   const [hovered, setHovered] = useState(false) // 🔥 Notion hover
 
+  const isPublic =
+  pathname.startsWith("/track") ||
+  pathname.startsWith("/login") ||
+  pathname.startsWith("/signup")
+
+
   useEffect(()=>{
     setMounted(true)
     setLangState(getLang())
@@ -36,6 +42,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }
 
   if(!mounted) return null
+  
+  if (isPublic) {
+  return children
+}
 
   const isExpanded = !collapsed || hovered
 
