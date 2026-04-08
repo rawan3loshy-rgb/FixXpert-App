@@ -35,7 +35,7 @@ export default function AddRepairForm(){
   const [technicians,setTechnicians] = useState<any[]>([])
 
   const [receivedBy,setReceivedBy] = useState("")
-
+  const today = new Date().toLocaleDateString()
   const { showToast } = useToast()
 
   const [shopId,setShopId] = useState<string | null>(null)
@@ -217,7 +217,12 @@ export default function AddRepairForm(){
         <h1 className="text-4xl font-bold mb-10">
           {t("addNewRepair")}
         </h1>
-
+        <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Add Repair</h1>
+         <span className="text-sm text-slate-400">
+         📅 {today}
+         </span>
+         </div>
         <form onSubmit={submit} className="space-y-6">
 
           {/* CUSTOMER + DEVICE */}
