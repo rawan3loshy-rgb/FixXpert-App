@@ -2,12 +2,20 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { usePathname } from "next/navigation"
 import { useRouter } from "next/navigation"
 
 export default function ProtectedRoute({ children }: any) {
 
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
+   // 🔥 allow public routes
+  if (
+    pathname.startsWith("/track") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup")
+  )
 
   useEffect(() => {
 
