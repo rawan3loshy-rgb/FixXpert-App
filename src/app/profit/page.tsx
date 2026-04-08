@@ -190,9 +190,9 @@ export default function ProfitPage(){
 
   if(!mounted) return null
 
-  if(loading){
-    return <p className="p-10 text-white">{t("loading")}</p>
-  }
+  if(loading || !shop){
+  return <p className="p-10 text-white">{t("loading")}</p>
+}
 
   // =========================
   // CHART DATA
