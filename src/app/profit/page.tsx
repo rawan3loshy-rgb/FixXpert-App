@@ -56,15 +56,20 @@ export default function ProfitPage(){
 
     // 🔥 REALTIME
     const channel = supabase
-      .channel("repairs-live")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "repairs" },
-        () => {
-          load()
-        }
-      )
-      .subscribe()
+    .channel("repairs-live")
+   .on(
+    "postgres_changes",
+    { 
+      event: "*", 
+      schema: "public", 
+      table: "repairs",
+      filter: `shop_id=eq.${shop?.id}` // 🔥 أهم سطر
+    },
+    () => {
+      load()
+    }
+   )
+   .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
