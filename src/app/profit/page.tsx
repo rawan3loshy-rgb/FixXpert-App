@@ -50,32 +50,31 @@ export default function ProfitPage(){
   // =========================
   // INIT + REALTIME
   // =========================
-  useEffect(()=>{
-    setMounted(true)
-    load()
+ useEffect(()=>{
 
-    // 🔥 REALTIME
-    const channel = supabase
+  if(!shop?.id) return // 🔥 مهم جداً
+
+  const channel = supabase
     .channel("repairs-live")
-   .on(
-    "postgres_changes",
-    { 
-      event: "*", 
-      schema: "public", 
-      table: "repairs",
-      filter: `shop_id=eq.${shop?.id}` // 🔥 أهم سطر
-    },
-    () => {
-      load()
-    }
-   )
-   .subscribe()
+    .on(
+      "postgres_changes",
+      { 
+        event: "*", 
+        schema: "public", 
+        table: "repairs",
+        filter: `shop_id=eq.${shop.id}` // ✅ الآن صحيح
+      },
+      () => {
+        load()
+      }
+    )
+    .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+  return () => {
+    supabase.removeChannel(channel)
+  }
 
-  },[])
+},[shop?.id])
 
   useEffect(()=>{
     if(mounted){
