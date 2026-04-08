@@ -49,7 +49,7 @@ export const TEXT: Record<string, Record<Lang, string>> = {
   selectProblem: { en: "Select problem", de: "Problem auswählen" },
   repairDetails: { en: "Repair details...", de: "Reparaturdetails..." },
   technicianName: { en: "Technician name", de: "Technikername" },
-  deviceReturned: { en: "Device returned", de: "Zom Zweiten mal Repariert " },
+  deviceReturned: { en: "Device returned", de: "Zum Zweiten mal Repariert " },
   repairLocked: { en: "This repair is locked", de: "Diese Reparatur ist gesperrt" },
   current: { en: "current", de: "aktuell" },
   backToDatshboard: {en: "Back to Dashboard",de: "Zurück zu Dashboard"},
