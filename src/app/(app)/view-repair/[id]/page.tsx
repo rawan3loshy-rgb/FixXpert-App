@@ -19,12 +19,10 @@ export default function ViewRepair(){
   const [repair,setRepair] = useState<any>(null)
   const [history,setHistory] = useState<any[]>([])
   const [loading,setLoading] = useState(true)
-
   // 🔥 NEW STATE (modal)
   const [showFixModal,setShowFixModal] = useState(false)
   const [fixStatus,setFixStatus] = useState("")
   const [noWarranty,setNoWarranty] = useState(false)
-
   const getAllowedStatuses = (current: string) => {
     switch (current) {
       case "received":
@@ -95,7 +93,6 @@ export default function ViewRepair(){
     if(!repair) return
 
     const allowed = getAllowedStatuses(repair.status)
-
     // ❌ منع القفز
     if (
       newStatus !== repair.status &&
@@ -206,7 +203,7 @@ export default function ViewRepair(){
 
   const currentIndex = steps.indexOf(repair.status)
   const allowedStatuses = getAllowedStatuses(repair.status)
-
+  const createdDate = repair.created_at? new Date(repair.created_at).toLocaleDateString(): ""
   return(
    <PageWrapper>
     <div className="min-h-screen bg-slate-950 text-white p-6">
@@ -230,6 +227,12 @@ export default function ViewRepair(){
           <p><b>{t("phone")}:</b> {repair.phone}</p>
           <p><b>{t("deviceLabel")}:</b> {repair.device}</p>
           <p><b>{t("problemLabel")}:</b> {repair.problem}</p>
+          {/* 📅 CREATED DATE */}
+          {createdDate && (
+            <p className="text-xs text-slate-400
+            mt-2"> 
+            📅 {createdDate}</p>
+          )}
 
           {/* 🔥 NEW INFO */}
           <div className="flex gap-2 mt-2 flex-wrap">

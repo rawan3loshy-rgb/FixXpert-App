@@ -21,7 +21,7 @@ export default function RepairsPage() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [loading, setLoading] = useState(true)
-
+ 
   // 🔐 PIN SYSTEM
   const [shop, setShop] = useState<any>(null)
   const [showPin, setShowPin] = useState(false)
@@ -308,7 +308,7 @@ ${url}`
           <div className="grid gap-4">
 
             {filtered.map((r)=>{
-
+            const createdDate = r.created_at? new Date(r.created_at).toLocaleDateString(): ""
               const profit = (Number(r.price || 0) - Number(r.cost || 0))
               const isLate =
                 (Date.now() - new Date(r.created_at).getTime()) / (1000*60*60*24) > 2 &&
@@ -330,6 +330,13 @@ ${url}`
                       </span>
 
                       <p className="text-slate-400 mt-1">{r.device}</p>
+                      {/* 📅 DATE */}
+                      {createdDate && (
+                        <p className="text-xs text-slate-500 
+                        mt-1">
+                       📅 {createdDate}
+                       </p>
+                       )}
 
                       {isLate && (
                         <p className="text-red-400 text-xs mt-1">
