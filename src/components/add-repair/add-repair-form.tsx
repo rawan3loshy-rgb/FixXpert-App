@@ -13,7 +13,7 @@ import { repairSchema } from "@/lib/repairs/repair.schema"
 import { createRepair } from "@/lib/repairs/create.repair"
 import Button from "@/components/ui/button"
 import { useToast } from "@/components/ui/toast-provider"
-import BackButton from "@/components/BackButton"
+
 
 
 export default function AddRepairForm(){
@@ -209,7 +209,7 @@ export default function AddRepairForm(){
   }
 
   return(
-     
+      
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 text-white p-6">
 
       <div className="max-w-5xl mx-auto">
@@ -354,7 +354,7 @@ export default function AddRepairForm(){
         </form>
       
       </div>
-     <BackButton />
+     
     </div>
   )
 }
