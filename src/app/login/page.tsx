@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
+import { supabase} from "@/lib/supabase"
 import AuthLayout from "@/components/auth/auth-layout"
 import { useToast } from "@/components/ui/toast-provider"
 
@@ -15,11 +15,19 @@ export default function LoginPage() {
   const [password,setPassword] = useState("")
   const [loading,setLoading] = useState(false)
   const [showPassword,setShowPassword] = useState(false)
+  const [redirectTo, setRedirectTo] = useState("/dashboard")
+
+
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search)
+  const redirect = params.get("redirect") || "/dashboard"
+  setRedirectTo(redirect)
+}, [])
 
   const handleLogin = async (e:any)=>{
     e.preventDefault()
     if(loading) return
-
+    
     setLoading(true)
 
     // 🔥 تحقق إذا الجهاز trusted لهذا الإيميل
@@ -47,7 +55,7 @@ export default function LoginPage() {
       // ✅ تخطي OTP
       localStorage.setItem("otp_verified", "true")
 
-      router.push("/dashboard")
+      router.push(redirectTo)
       return
     }
 
@@ -82,7 +90,7 @@ export default function LoginPage() {
 
     showToast("Bestätigungscode wurde gesendet")
 
-    router.push("/verify?email=" + email)
+    router.push(`/verify?email=${email}&redirect=${redirectTo}`)
   }
 
   return(

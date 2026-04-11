@@ -20,7 +20,7 @@ export default function Verify(){
   const [timer,setTimer] = useState(30)
   const [errorAnim,setErrorAnim] = useState(false)
   const [attempts,setAttempts] = useState(0)
-
+  const redirect = searchParams.get("redirect") || "/dashboard"
   // 🔥 NEW
   const [remember,setRemember] = useState(false)
 
@@ -120,10 +120,7 @@ export default function Verify(){
     }
 
     // ✅ إذا نجاح
-    if(data?.session){
-      await supabase.auth.setSession(data.session)
-    }
-
+   
     // 🔐 OTP verified
     localStorage.setItem("otp_verified", "true")
 
@@ -137,7 +134,7 @@ export default function Verify(){
 
     showToast("Login successful 🚀")
 
-    router.push("/dashboard")
+    router.push(redirect)
   }
 
   // =========================
