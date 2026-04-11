@@ -121,7 +121,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="w-full max-w-[1400px] mx-auto space-y-6">
 
             {/* 🔥 TOPBAR */}
-            <div className="glass card flex justify-between items-center flex-wrap gap-3 px-4 py-3 relative z-0 isolate">
+            <div className="glass card flex justify-between items-center flex-wrap gap-3 px-4 py-3 relative z-10 isolate">
 
               {/* LEFT */}
               <div className="flex items-center gap-3">
@@ -156,13 +156,30 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 {/* Notifications */}
                 <button
                   onClick={()=>setOpen(!open)}
-                  className="glass btn w-10 h-10 flex items-center justify-center rounded-xl"
+                  className="relative w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 transition"
                 >
                   🔔
+                <span className="absolute top-1 right-1  w-2 h-2 bg-red-500 rounded-full"/>
                 </button>
-
-                <NotificationsPanel open={open} onClose={()=>setOpen(false)}/>
-
+                {open && (
+                  <>
+                   {/* BLUR BACKGROUND */}
+                   <div onClick={()=>setOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-md z-[998]" />
+                    {/* PANEL */}
+                    <div className="fixed top-20 right-6 w-[320px] bg-[#020617]/95 backdrop-blur-xl border border-white/10
+                    rounded-2xl p-5 shadow-[0_20px_80px_rgba(0,0,0,0.7)] z-[999] ">
+                    <div className="flex justify-between items-center mb-4">
+                      <p className="text-sm font-semibold text-white"> 
+                       Notifications 
+                      </p>
+                    <button onClick={()=>setOpen(false)}>✕</button>
+                    </div>
+                    <p className="text-sm text-slate-400">
+                      No notifications
+                    </p>
+                    </div>
+                    </>
+                    )}
                 {/* Lang */}
                 <div className="glass flex rounded-xl p-1">
                   <button 

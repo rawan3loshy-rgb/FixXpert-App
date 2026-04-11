@@ -1,46 +1,118 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import BackButton from "@/components/BackButton"
+import { motion } from "framer-motion"
+import { t } from "@/lib/text"
 
 export default function TrackPage(){
 
-const router = useRouter()
-const [order,setOrder] = useState("")
+  const [order,setOrder] = useState("")
+  const [submitted,setSubmitted] = useState(false)
 
-const handleTrack = () => {
+  const handleTrack = () => {
+    if(!order.trim()) return
+    setSubmitted(true)
+  }
 
-if(!order) return
+  return(
 
-router.push(`/track/${order}`)
+    <div className="relative min-h-[80vh] flex items-center justify-center p-6">
 
-}
+      {/* BACKGROUND */}
+      <div className="absolute w-[600px] h-[600px] bg-indigo-600/20 blur-[140px] rounded-full" />
 
-return(
+      {!submitted ? (
 
-<div style={{padding:"40px"}}>
-<BackButton />
-<h2>Track Repair</h2>
+        // =========================
+        // 🔍 SEARCH UI
+        // =========================
+        <motion.div
+          initial={{opacity:0, scale:0.9}}
+          animate={{opacity:1, scale:1}}
+          className="
+            w-full max-w-lg
+            bg-white/5 backdrop-blur-2xl
+            border border-white/10
+            rounded-3xl
+            p-10
+            shadow-[0_0_80px_rgba(99,102,241,0.35)]
+            relative z-10
+          "
+        >
 
-<input
-placeholder="Enter Order Number"
-value={order}
-onChange={(e)=>setOrder(e.target.value)}
-style={{
-padding:"10px",
-border:"1px solid #ccc",
-borderRadius:"6px",
-marginRight:"10px"
-}}
-/>
+          <div className="mb-4">
+            <BackButton />
+          </div>
 
-<button onClick={handleTrack}>
-Track
-</button>
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-white">
+              🔍 {t("trackTitle")}
+            </h1>
 
-</div>
+            <p className="text-slate-400 text-sm mt-2">
+              {t("trackSubtitle")}
+            </p>
+          </div>
 
-)
+          <input
+            value={order}
+            onChange={(e)=>setOrder(e.target.value)}
+            onKeyDown={(e)=>{
+              if(e.key==="Enter") handleTrack()
+            }}
+            placeholder={t("orderPlaceholder")}
+            className="
+              w-full px-5 py-4
+              rounded-xl
+              bg-white/5
+              border border-white/10
+              outline-none
+              text-white text-center text-lg
+              focus:border-indigo-500
+              focus:shadow-[0_0_25px_rgba(99,102,241,0.6)]
+            "
+          />
 
+          <motion.button
+            onClick={handleTrack}
+            whileHover={{scale:1.05}}
+            whileTap={{scale:0.95}}
+            className="
+              mt-6 w-full py-3 rounded-xl
+              bg-gradient-to-r from-indigo-500 to-cyan-400
+              font-semibold text-white
+            "
+          >
+            {t("trackButton")}
+          </motion.button>
+
+        </motion.div>
+
+      ) : (
+
+        // =========================
+        // 📦 RESULT (مؤقت)
+        // =========================
+        <motion.div
+          initial={{opacity:0, y:20}}
+          animate={{opacity:1, y:0}}
+          className="text-white text-center"
+        >
+          <p className="text-lg">
+            Order: <b>{order}</b>
+          </p>
+
+          <button
+            onClick={()=>setSubmitted(false)}
+            className="mt-4 text-indigo-400 underline"
+          >
+            ← Back
+          </button>
+        </motion.div>
+
+      )}
+
+    </div>
+  )
 }

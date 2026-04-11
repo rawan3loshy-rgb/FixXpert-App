@@ -600,8 +600,8 @@ useEffect(()=>{
          border border-white/10
          shadow-[0_20px_80px_rgba(99,102,241,0.15)]
           ">
-
-         <ResponsiveContainer>
+          
+         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData}>
 
          <defs>

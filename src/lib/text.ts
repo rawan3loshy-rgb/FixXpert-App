@@ -53,6 +53,22 @@ export const TEXT: Record<string, Record<Lang, string>> = {
   repairLocked: { en: "This repair is locked", de: "Diese Reparatur ist gesperrt" },
   current: { en: "current", de: "aktuell" },
   backToDatshboard: {en: "Back to Dashboard",de: "Zurück zu Dashboard"},
+  trackTitle: {
+  en: "Track Your Repair",
+  de: "Reparatur verfolgen"
+},
+trackSubtitle: {
+  en: "Enter your order number to check repair status",
+  de: "Geben Sie Ihre Auftragsnummer ein"
+},
+orderPlaceholder: {
+  en: "Order number...",
+  de: "Auftragsnummer..."
+},
+trackButton: {
+  en: "Track Repair",
+  de: "Verfolgen"
+},
   // employees
   employeeName: { en: "Employee name", de: "Mitarbeitername" },
   employeeAdded: { en: "Employee added", de: "Mitarbeiter hinzugefügt" },
