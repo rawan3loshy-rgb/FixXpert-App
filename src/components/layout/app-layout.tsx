@@ -116,7 +116,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* 📦 MAIN */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden">
+        <main className="flex-1 min-w-0 p-4 md:p-6 lg:p-8 overflow-x-hidden">
 
           <div className="w-full max-w-[1400px] mx-auto space-y-6">
 
@@ -204,8 +204,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </div>
 
             {/* CONTENT */}
-            <div className="glass card p-4 md:p-6 transition-all duration-300">
-              {children}
+            <div className="w-full min-w-0">
+             <div className="glass card p-4 md:p-6 transition-all duration-300 w-full">
+               {children}
+              </div>
             </div>
 
           </div>

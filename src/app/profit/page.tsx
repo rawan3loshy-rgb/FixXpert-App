@@ -419,8 +419,12 @@ useEffect(()=>{
       )}
 
       {unlocked && (
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} className="space-y-6">
-
+        <motion.div 
+        initial={{opacity:0,y:20}}
+        animate={{opacity: unlocked ? 1 : 0, y: 
+        unlocked ? 0 : 20}}
+       className={`space-y-6 ${!unlocked && "pointer-events-none opacity-0"}`}>
+      
           {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
 
@@ -600,7 +604,7 @@ useEffect(()=>{
          border border-white/10
          shadow-[0_20px_80px_rgba(99,102,241,0.15)]
           ">
-          
+         <div className="w-full" style={{ height: 320 }}>
          <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData}>
 
@@ -638,7 +642,7 @@ useEffect(()=>{
          </AreaChart>
          </ResponsiveContainer>
           </div>
-          
+          </div>
           {/* TABLE */}
           <div className="glass rounded-xl overflow-hidden">
             <table className="w-full text-sm">

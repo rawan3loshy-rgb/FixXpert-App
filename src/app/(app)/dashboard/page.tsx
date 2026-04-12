@@ -9,10 +9,8 @@ import { t, tStatus } from "@/lib/text"
 import Card from "@/components/ui/card"
 import RepairPipeline from "@/components/dashboard/repair-pipeline"
 import PageWrapper from "@/components/ui/page-wrapper"
-import RepairChart from "@/components/dashboard/repairs-charts"
-import StatusChart from "@/components/dashboard/status-charts"
 import { useToast } from "@/components/ui/toast-provider"
-
+import dynamic from "next/dynamic"
 import Skeleton from "@/components/ui/skeleton"
 import EmptyState from "@/components/ui/empty-state"
 import PinModal from "@/components/ui/pin-modal"
@@ -30,6 +28,15 @@ export default function Page() {
   const [showProfit, setShowProfit] = useState(false)
   const [showPin, setShowPin] = useState(false)
   const [shop, setShop] = useState<any>(null)
+  const RepairChart = dynamic(
+  () => import("@/components/dashboard/repairs-charts"),
+  { ssr: false }
+)
+
+const StatusChart = dynamic(
+  () => import("@/components/dashboard/status-charts"),
+  { ssr: false }
+)
 
   const lockTimer = useRef<any>(null)
 
@@ -228,19 +235,24 @@ export default function Page() {
         </div>
 
         {/* CHARTS */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 
-         <Card>
-           <div className="lg:col-span-2">
-           <RepairChart repairs={repairs} />
+         
+          <div className="lg:col-span-1 min-w-0">
+            <Card>
+               <div className="w-full h-[320px] min-w-0">
+               <RepairChart repairs={repairs} />
+             </div>
+             </Card>
           </div>
-          </Card>
-
-         <Card>
-            <div className="lg:col-span-1">
-           <StatusChart data={statusData} />
-           </div>
-          </Card>
+         
+          <div className="lg:col-span-1 min-w-0">
+            <Card>
+               <div className="w-full h-[320px] min-w-0">
+               <StatusChart data={statusData} />
+              </div>
+            </Card>
+          </div>
 
          </div>
 
