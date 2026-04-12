@@ -6,10 +6,9 @@ import {
   PieChart,
   Pie,
   Cell,
-  Tooltip,
-  ResponsiveContainer
+  Tooltip
 } from "recharts"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 
 type Props = {
   data: Record<string, number>
@@ -29,12 +28,13 @@ export default function StatusChart({ data }: Props) {
 
   const router = useRouter()
 
-  const [mounted, setMounted] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  const [width, setWidth] = useState(300)
   const [isMobile, setIsMobile] = useState(false)
 
+  // 🔥 detect mobile
   useEffect(() => {
-    setMounted(true)
-
     const check = () => {
       setIsMobile(window.innerWidth < 768)
     }
@@ -45,7 +45,22 @@ export default function StatusChart({ data }: Props) {
     return () => window.removeEventListener("resize", check)
   }, [])
 
-  if (!mounted) return null
+  // 🔥 measure width (الحل الحقيقي)
+  useEffect(() => {
+    if (!ref.current) return
+
+    const update = () => {
+      const w = ref.current?.offsetWidth || 0
+      if (w > 100) setWidth(w)
+    }
+
+    update()
+
+    const observer = new ResizeObserver(update)
+    observer.observe(ref.current)
+
+    return () => observer.disconnect()
+  }, [])
 
   const chartData = Object.entries(data).map(([name, value]) => ({
     name,
@@ -65,7 +80,7 @@ export default function StatusChart({ data }: Props) {
 
       {/* CENTER KPI */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="text-center">
+        <div className="text-center translate-y-10">
           <p className="text-2xl md:text-4xl font-bold text-white">
             {total}
           </p>
@@ -75,56 +90,52 @@ export default function StatusChart({ data }: Props) {
         </div>
       </div>
 
-      {/* 🔥 FIXED CONTAINER */}
-      <div className="w-full h-full min-w-0">
+      {/* 🔥 CHART */}
+      <div ref={ref} className="w-full h-[300px]">
 
-        <ResponsiveContainer width="100%" height="100%">
+        <PieChart width={width} height={300}>
 
-          <PieChart>
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            innerRadius={isMobile ? 60 : 90}
+            outerRadius={isMobile ? 80 : 120}
+            paddingAngle={3}
+            isAnimationActive
+            animationDuration={800}
+            onClick={(entry:any) => {
+              if (!entry?.name) return
+              router.push(`/repairs?status=${entry.name}`)
+            }}
+          >
 
-            <Pie
-              data={chartData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={isMobile ? 60 : 90}
-              outerRadius={isMobile ? 80 : 120}
-              paddingAngle={3}
-              isAnimationActive
-              animationDuration={800}
-              onClick={(entry:any) => {
-                if (!entry?.name) return
-                router.push(`/repairs?status=${entry.name}`)
-              }}
-            >
+            {chartData.map((entry, index) => (
+              <Cell
+                key={index}
+                fill={COLORS[entry.name] || "#8884d8"}
+              />
+            ))}
 
-              {chartData.map((entry, index) => (
-                <Cell
-                  key={index}
-                  fill={COLORS[entry.name] || "#8884d8"}
-                />
-              ))}
+          </Pie>
 
-            </Pie>
+          <Tooltip
+            contentStyle={{
+              background: "#020617",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "10px",
+              color: "#fff",
+              fontSize: "12px"
+            }}
+            formatter={(value, name) => [
+              value as number,
+              tStatus(name as string)
+            ]}
+          />
 
-            <Tooltip
-              contentStyle={{
-                background: "#020617",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "10px",
-                color: "#fff",
-                fontSize: "12px"
-              }}
-              formatter={(value, name) => [
-                value as number,
-                tStatus(name as string)
-              ]}
-            />
-
-          </PieChart>
-
-        </ResponsiveContainer>
+        </PieChart>
 
       </div>
 
