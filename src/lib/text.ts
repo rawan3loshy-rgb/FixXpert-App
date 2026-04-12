@@ -124,6 +124,11 @@ track: {
   de: "Verfolgen"
 
 },
+stock: {
+  en: "Stock",
+  de: "Lagerverwaltung"
+
+},
 
   // repairs
   saveChanges: { en: "Save Changes", de: "Änderungen speichern" },
