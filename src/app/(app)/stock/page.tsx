@@ -1,35 +1,48 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import PageWrapper from "@/components/ui/page-wrapper"
+import { supabase } from "@/lib/supabase"
 import Card from "@/components/ui/card"
-import { db, StockItem } from "@/lib/db"
+import PageWrapper from "@/components/ui/page-wrapper"
 
 export default function StockPage() {
 
-  const [items, setItems] = useState<StockItem[]>([])
+  const [items, setItems] = useState<any[]>([])
   const [name, setName] = useState("")
   const [qty, setQty] = useState(0)
+  const [user, setUser] = useState<any>(null)
 
-  // 📥 تحميل البيانات
+  // 🔑 get user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser()
+      setUser(data.user)
+    }
+    getUser()
+  }, [])
+
+  // 📥 load stock
   const load = async () => {
-    const data = await db.stock.toArray()
-    setItems(data)
+    const { data } = await supabase
+      .from("stock_items")
+      .select("*")
+      .order("created_at", { ascending: false })
+
+    setItems(data || [])
   }
 
   useEffect(() => {
-    load()
-  }, [])
+    if (user) load()
+  }, [user])
 
-  // ➕ إضافة
+  // ➕ add
   const addItem = async () => {
-    if (!name) return
+    if (!name || !user) return
 
-    await db.stock.add({
+    await supabase.from("stock_items").insert({
       name,
       quantity: qty,
-      min: 1,
-      created_at: new Date().toISOString()
+      shop_id: user.id
     })
 
     setName("")
@@ -37,30 +50,22 @@ export default function StockPage() {
     load()
   }
 
-  // ➕ زيادة
-  const increase = async (id?: number) => {
-    if (!id) return
-
-    const item = await db.stock.get(id)
-    if (!item) return
-
-    await db.stock.update(id, {
-      quantity: item.quantity + 1
-    })
+  // ➕ increase
+  const increase = async (item:any) => {
+    await supabase
+      .from("stock_items")
+      .update({ quantity: item.quantity + 1 })
+      .eq("id", item.id)
 
     load()
   }
 
-  // ➖ نقصان
-  const decrease = async (id?: number) => {
-    if (!id) return
-
-    const item = await db.stock.get(id)
-    if (!item) return
-
-    await db.stock.update(id, {
-      quantity: Math.max(0, item.quantity - 1)
-    })
+  // ➖ decrease
+  const decrease = async (item:any) => {
+    await supabase
+      .from("stock_items")
+      .update({ quantity: Math.max(0, item.quantity - 1) })
+      .eq("id", item.id)
 
     load()
   }
@@ -70,10 +75,7 @@ export default function StockPage() {
 
       <div className="space-y-8">
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">📦 Stock Management</h1>
-        </div>
+        <h1 className="text-3xl font-bold">📦 Stock Management</h1>
 
         {/* ADD */}
         <Card>
@@ -148,14 +150,14 @@ export default function StockPage() {
                     </span>
 
                     <button
-                      onClick={()=>increase(item.id)}
+                      onClick={()=>increase(item)}
                       className="px-2 py-1 bg-indigo-600 rounded"
                     >
                       +
                     </button>
 
                     <button
-                      onClick={()=>decrease(item.id)}
+                      onClick={()=>decrease(item)}
                       className="px-2 py-1 bg-red-500 rounded"
                     >
                       -
