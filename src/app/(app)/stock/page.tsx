@@ -7,7 +7,6 @@ import PageWrapper from "@/components/ui/page-wrapper"
 import { useToast } from "@/components/ui/toast-provider"
 import { getLang } from "@/lib/text"
 
-// TYPES
 type StockItem = {
   id: string
   device: string
@@ -44,22 +43,25 @@ export default function StockPage() {
 
   const [search, setSearch] = useState("")
   const [selectedDevice, setSelectedDevice] = useState("")
+  const [highlight, setHighlight] = useState(0)
+  const [open, setOpen] = useState(false)
+
   const [type, setType] = useState("")
   const [quality, setQuality] = useState("")
   const [qty, setQty] = useState(1)
 
   const [filter, setFilter] = useState("")
-
   const [userId, setUserId] = useState<string | null>(null)
   const [lang, setLang] = useState("en")
+
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const firstLoad = useRef(true)
   const { showToast } = useToast()
 
   // 🌍 LANG
-  useEffect(() => {
-    setLang(getLang())
-  }, [])
+  useEffect(() => setLang(getLang()), [])
 
   // 🔑 USER
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function StockPage() {
     })
   }, [])
 
-  // 📥 LOAD (FIXED)
+  // 📥 LOAD
   useEffect(() => {
     if (!userId) return
 
@@ -92,19 +94,62 @@ export default function StockPage() {
     load()
   }, [userId])
 
-  // 🔍 DEVICE SEARCH
+  // 🔍 SEARCH
   const filteredDevices = devices.filter(d =>
     `${d.brand} ${d.model}`.toLowerCase().includes(search.toLowerCase())
   )
 
-  // 🔍 FILTER STOCK
   const filteredItems = items.filter(i =>
     `${i.device} ${i.type} ${i.quality}`.toLowerCase().includes(filter.toLowerCase())
   )
 
+  // 🔥 CLOSE ON OUTSIDE CLICK
+  useEffect(() => {
+    const handleClick = (e: any) => {
+      if (!wrapperRef.current?.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [])
+
+  // 🔥 KEYBOARD
+  const handleKeyDown = (e: any) => {
+
+    if (!open) return
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      setHighlight(h => Math.min(h + 1, filteredDevices.length - 1))
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault()
+      setHighlight(h => Math.max(h - 1, 0))
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault()
+
+      const d = filteredDevices[highlight]
+      if (!d) return
+
+      const label = `${d.brand} ${d.model}`
+      setSelectedDevice(label)
+      setSearch(label)
+      setOpen(false)
+    }
+  }
+
+  // 🔥 AUTO SCROLL
+  useEffect(() => {
+    const el = itemRefs.current[highlight]
+    if (el) el.scrollIntoView({ block: "nearest" })
+  }, [highlight])
+
   // 🔔 NOTIFICATION
   useEffect(() => {
-
     if (firstLoad.current) {
       firstLoad.current = false
       return
@@ -114,10 +159,9 @@ export default function StockPage() {
       if (item.quantity === 0) showToast(`❌ ${item.device}`)
       if (item.quantity === 1) showToast(`⚠️ ${item.device}`)
     })
-
   }, [items])
 
-  // ➕ ADD (FIXED 100%)
+  // ➕ ADD
   const addItem = async () => {
     if (!selectedDevice || !userId) return
 
@@ -136,18 +180,15 @@ export default function StockPage() {
         )
       )
 
-      const { error } = await supabase
+      await supabase
         .from("stock_items")
         .update({ quantity: newQty })
         .eq("id", existing.id)
 
-      if (error) console.error("UPDATE ERROR ❌", error)
-
       return
     }
 
-    // ✅ INSERT بدون id
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("stock_items")
       .insert({
         device: selectedDevice,
@@ -159,52 +200,25 @@ export default function StockPage() {
       .select()
       .single()
 
-    if (error) {
-      console.error("INSERT ERROR ❌", error)
-      return
-    }
-
-    if (data) {
-      setItems(prev => [data, ...prev])
-    }
+    if (data) setItems(prev => [data, ...prev])
 
     setSearch("")
     setSelectedDevice("")
     setQty(1)
   }
 
-  // ➕➖ BUTTONS
   const increase = async (item: StockItem) => {
     const newQty = item.quantity + 1
-
-    setItems(p =>
-      p.map(i => i.id === item.id ? { ...i, quantity: newQty } : i)
-    )
-
-    const { error } = await supabase
-      .from("stock_items")
-      .update({ quantity: newQty })
-      .eq("id", item.id)
-
-    if (error) console.error(error)
+    setItems(p => p.map(i => i.id === item.id ? { ...i, quantity: newQty } : i))
+    await supabase.from("stock_items").update({ quantity: newQty }).eq("id", item.id)
   }
 
   const decrease = async (item: StockItem) => {
     const newQty = Math.max(0, item.quantity - 1)
-
-    setItems(p =>
-      p.map(i => i.id === item.id ? { ...i, quantity: newQty } : i)
-    )
-
-    const { error } = await supabase
-      .from("stock_items")
-      .update({ quantity: newQty })
-      .eq("id", item.id)
-
-    if (error) console.error(error)
+    setItems(p => p.map(i => i.id === item.id ? { ...i, quantity: newQty } : i))
+    await supabase.from("stock_items").update({ quantity: newQty }).eq("id", item.id)
   }
 
-  // 🎨 LABEL HELPERS
   const getTypeLabel = (key:string) =>
     types.find(t=>t.key===key)?.[lang==="de"?"label_de":"label_en"]
 
@@ -224,31 +238,49 @@ export default function StockPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
 
-            <div className="relative md:col-span-2">
+            {/* 🔥 SEARCH */}
+            <div ref={wrapperRef} className="relative md:col-span-2">
+
               <input
                 value={search}
-                onChange={(e)=>setSearch(e.target.value)}
+                onFocus={()=>setOpen(true)}
+                onKeyDown={handleKeyDown}
+                onChange={(e)=>{
+                  setSearch(e.target.value)
+                  setOpen(true)
+                  setHighlight(0)
+                }}
                 placeholder={lang==="de"?"Gerät suchen":"Search device"}
                 className="w-full px-3 py-2 bg-white/5 rounded-lg"
               />
 
-              {search && (
+              {open && search && (
                 <div className="absolute w-full bg-slate-900 mt-2 rounded-xl max-h-60 overflow-auto z-50">
-                  {filteredDevices.slice(0,20).map(d=>{
+
+                  {filteredDevices.slice(0,20).map((d,i)=>{
                     const label = `${d.brand} ${d.model}`
+
                     return (
                       <div
+                        ref={(el) => {
+                         itemRefs.current[i] = el}}
                         key={d.id}
                         onClick={()=>{
                           setSelectedDevice(label)
                           setSearch(label)
+                          setOpen(false)
                         }}
-                        className="p-2 hover:bg-white/10 cursor-pointer"
+                        className={`p-2 cursor-pointer rounded ${
+                          i===highlight
+                            ? "bg-indigo-600 text-white"
+                            : "hover:bg-white/10"
+                        }`}
                       >
                         {label}
                       </div>
                     )
                   })}
+
                 </div>
               )}
             </div>
