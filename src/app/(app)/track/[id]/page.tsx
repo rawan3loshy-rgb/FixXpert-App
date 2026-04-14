@@ -51,7 +51,7 @@ export default function TrackRepair(){
       const { data } = await supabase
         .from("repairs")
         .select("*")
-        .eq("order_number", id)
+        .eq("order_number", Number(id)) // ✅ FIX
         .single()
 
       setRepair(data)
@@ -71,7 +71,7 @@ export default function TrackRepair(){
         },
         (payload:any)=>{
 
-          if(payload.new.order_number == id){
+          if(payload.new.order_number == Number(id)){ // ✅ FIX
             setRepair(payload.new)
             playSound()
           }
