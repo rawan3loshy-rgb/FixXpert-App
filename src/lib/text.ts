@@ -129,6 +129,14 @@ stock: {
   de: "Lagerverwaltung"
 
 },
+orderparts: {
+  en: "Order Parts",
+  de: "Nachbestellung"
+},
+notice: {
+  en: "Notice",
+  de: "Notizen"
+},
 
   // repairs
   saveChanges: { en: "Save Changes", de: "Änderungen speichern" },

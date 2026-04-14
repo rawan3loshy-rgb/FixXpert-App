@@ -220,6 +220,9 @@ const StatusChart = dynamic(
             { label: t("viewRepairs"), icon: "📋", path: "/repairs" },
             { label: t("repairPipeline"), icon: "📊", path: "/pipeline" },
             { label: t("trackDevice"), icon: "🔍", path: "/track" },
+            { label: t("stock"), icon: "📦", path: "/stock" },
+            { label: t("orderparts"), icon: "📥", path: "/order-parts" },
+            { label: t("notice"), icon: "📝", path: "/notice" },
             
           ].map((item, i) => (
             <motion.div key={i} whileHover={{ scale: 1.05 }} onClick={()=>router.push(item.path)}>

@@ -17,9 +17,11 @@ export default function Sidebar({ collapsed }: Props){
     { label: t("dashboard"), icon: "🏠", path: "/dashboard" },
     { label: t("repairs"), icon: "📋", path: "/repairs" },
     { label: t("addRepair"), icon: "➕", path: "/add-repair" },
-    { label: t("pipeline"), icon: "📊", path: "/pipeline" },
+    { label: t("repairPipeline"), icon: "📊", path: "/pipeline" },
     { label: t("track"), icon: "🔍", path: "/track" },
     { label: t("stock"), icon: "📦", path: "/stock" },
+    { label: t("orderparts"), icon: "📥", path: "/order-parts" },
+    { label: t("notice"), icon: "📝", path: "/notice" },
   ]
 
   return(
