@@ -544,25 +544,25 @@ export default function StockPage() {
 
         {/* ================= LIST ================= */}
         <Card>
-          <div className="grid grid-cols-12 gap-2 px-2 text-xs text-slate-400 mb-2 border-b border-white/10 pb-2">
+          <div className="hidden md:grid grid-cols-12 gap-2 px-2 text-xs text-slate-400 mb-2 border-b border-white/10 pb-2">
 
-            <div className="col-span-4">
+            <div className="md:col-span-4">
              {lang === "de" ? "Gerät" : "Device"}
             </div>
 
-            <div className="col-span-2">
+            <div className="md:col-span-2">
               {lang === "de" ? "Typ" : "Type"}
             </div>
 
-            <div className="col-span-2">
+            <div className="md:col-span-2">
              {lang === "de" ? "Qualität" : "Quality"}
             </div>
 
-            <div className="col-span-2">
+            <div className="md:col-span-2">
              {lang === "de" ? "Speicher" : "Capacity"}
             </div>
  
-            <div className="col-span-2 text-right">
+            <div className="md:col-span-2 text-right">
              {lang === "de" ? "Menge" : "Qty"}
             </div>
 
@@ -573,25 +573,37 @@ export default function StockPage() {
             {filteredItems.map(item=>(
               <div key={item.id} className="p-4 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center gap-4">
 
-                <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 w-full items-center">
+                <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-2 w-full items-center">
 
                {/* DEVICE */}
                <div className="bg-white/5 px-3 py-2 rounded-lg text-sm font-semibold">
+                 <p className="text-xs text-slate-400 md:hidden">
+                  {lang === "de" ? "Gerät" : "Device"}
+                 </p>
                {item.device}
                </div>
 
                 {/* TYPE */}
                <div className="bg-white/5 px-3 py-2 rounded-lg text-sm text-slate-300">
+               <p className="text-xs text-slate-400 md:hidden">
+                  {lang === "de" ? "Typ" : "Type"}
+                </p>
                {getTypeLabel(item.type)}
                </div>
 
                {/* QUALITY */}
                <div className="bg-white/5 px-3 py-2 rounded-lg text-sm text-slate-300">
+               <p className="text-xs text-slate-400 md:hidden">
+                  {lang === "de" ? "Qualität" : "Quality"}
+                </p>
                {getQualityLabel(item.quality)}
                </div>
 
                {/* CAPACITY */}
                <div className="bg-white/5 px-3 py-2 rounded-lg text-sm text-slate-300">
+               <p className="text-xs text-slate-400 md:hidden">
+                  {lang === "de" ? "Speicher" : "Capacity"}
+               </p>
                {item.capacity ? item.capacity : <span className="text-slate-500 italic">-</span>}
                </div>
 
