@@ -338,16 +338,26 @@ export default function StockPage() {
           <div className="mt-4 space-y-2">
 
           {draftItems.map((item, index) => (
-          <div key={index} className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
+          <div key={index} 
+            className="
+             grid 
+             grid-cols-1 
+             sm:grid-cols-2 
+             md:grid-cols-[2fr_1fr_1fr_1fr_0.7fr_0.3fr] 
+             gap-2 
+             bg-white/5 
+             p-3 
+             rounded-lg
+            ">
 
-         <div className="grid grid-cols-[2fr_1fr_1fr_1fr_0.7fr_0.3fr] gap-2 w-full items-center">
+         
 
            {/* DEVICE */}
-           <div className="text-sm bg-white/5 px-2 py-1 rounded">
+           <div className="sm:col-span-2 md:col-span-1 bg-white/5 px-3 py-2 rounded-lg">
            {item.device}
             </div>
 
-         {/* TYPE */}
+           {/* TYPE */}
           <select
           value={item.type}
          onChange={(e)=>{
@@ -414,7 +424,7 @@ export default function StockPage() {
 
 
 
-         </div>
+         
 
           {/* ❌ DELETE */}
           <button
@@ -573,7 +583,7 @@ export default function StockPage() {
             {filteredItems.map(item=>(
               <div key={item.id} className="p-4 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center gap-4">
 
-                <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-2 w-full items-center">
+                <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-3 md:gap-2 w-full items-center">
 
                {/* DEVICE */}
                <div className="bg-white/5 px-3 py-2 rounded-lg text-sm font-semibold">
