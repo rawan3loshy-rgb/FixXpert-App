@@ -8,6 +8,7 @@ import { t } from "@/lib/text"
 export default function PinModal({ correctPin, onClose, onSuccess }: any) {
 
   const [pin, setPin] = useState(["", "", "", "", "", ""])
+  const [visibleIndex, setVisibleIndex] = useState<number | null>(null)
   const [error, setError] = useState("")
   const [attempts, setAttempts] = useState(0)
   const [locked, setLocked] = useState(false)
@@ -33,22 +34,34 @@ export default function PinModal({ correctPin, onClose, onSuccess }: any) {
 
   const pinValue = pin.join("")
 
-  const handleChange = (value: string, index: number) => {
-    if (locked) return
-    if (!/^[0-9]?$/.test(value)) return
+ const handleChange = (value: string, index: number) => {
+  if (locked) return
+  
+  if (!/^[0-9]?$/.test(value)) return
+  
 
-    const newPin = [...pin]
-    newPin[index] = value
-    setPin(newPin)
+  const newPin = [...pin]
+  newPin[index] = value
+  setPin(newPin)
 
-    if (value && index < 5) {
-      inputsRef.current[index + 1]?.focus()
-    }
+  // 👁 عرض مؤقت
+  setVisibleIndex(index)
+  setTimeout(() => setVisibleIndex(null), 300)
 
-    if (index === 5 && value) {
-      setTimeout(handleSubmit, 100)
-    }
+  // 🔥 التنقل
+  if (value && index < 5) {
+    inputsRef.current[index + 1]?.focus()
   }
+
+  // ✅ الحل الصح: تحقق من الطول
+  const fullPin = newPin.join("")
+
+ console.log("FULL PIN:", fullPin)
+
+ if (newPin.every(d => d !== "")) {
+  handleSubmit(fullPin)
+}
+ }
 
   const handleKeyDown = (e: any, index: number) => {
     if (e.key === "Backspace" && !pin[index] && index > 0) {
@@ -68,52 +81,63 @@ export default function PinModal({ correctPin, onClose, onSuccess }: any) {
     while (newPin.length < 6) newPin.push("")
     setPin(newPin)
 
-    setTimeout(handleSubmit, 150)
+    setTimeout(() => {
+    handleSubmit(newPin.join(""))
+    }, 100)
   }
 
-  const handleSubmit = () => {
-    if (locked) return
-    if (pinValue.length < 6) return
+ const handleSubmit = (value?: string) => {
+  console.log("SUBMIT PIN:", value || pin.join(""))
+console.log("CORRECT PIN:", correctPin)
+  if (locked) return
 
-    if (pinValue === correctPin) {
-      setError("")
-      onSuccess()
-      return
-    }
+  const finalPin = value ?? pin.join("") // 👈 أهم سطر
 
-    setError(t("wrongPin"))
+  if (finalPin.length < 6) return
 
-    const el = document.getElementById("pin-box")
-    el?.classList.add("animate-shake")
-    setTimeout(() => el?.classList.remove("animate-shake"), 400)
-
-    const newAttempts = attempts + 1
-    setAttempts(newAttempts)
-
-    if (newAttempts >= 3) {
-      setLocked(true)
-      setCooldown(10)
-
-      lockTimer.current = setTimeout(() => {
-        setLocked(false)
-        setAttempts(0)
-        setPin(["", "", "", "", "", ""])
-        inputsRef.current[0]?.focus()
-      }, 10000)
-    }
-
-    setPin(["", "", "", "", "", ""])
-    inputsRef.current[0]?.focus()
+  if (finalPin === String(correctPin)) {
+    setError("")
+    onSuccess()
+    return
   }
+
+  setError(t("wrongPin"))
+
+  const el = document.getElementById("pin-box")
+  el?.classList.add("animate-shake")
+  setTimeout(() => el?.classList.remove("animate-shake"), 400)
+
+  const newAttempts = attempts + 1
+  setAttempts(newAttempts)
+
+  if (newAttempts >= 3) {
+    setLocked(true)
+    setCooldown(10)
+
+    lockTimer.current = setTimeout(() => {
+      setLocked(false)
+      setAttempts(0)
+      setPin(["", "", "", "", "", ""])
+      inputsRef.current[0]?.focus()
+    }, 10000)
+  }
+
+  setPin(["", "", "", "", "", ""])
+  inputsRef.current[0]?.focus()
+}
 
   // ❗ مهم جداً
   if (!mounted) return null
 
   return createPortal(
 
-    <div className="fixed inset-0 z-[999999] flex items-start justify-center pt-10 md:pt-20 bg-black/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-[999999] flex items-start justify-center pt-10 md:pt-20 bg-black/80 backdrop-blur-md"
+   onClick={onClose} // 👈 هذا المهم
+   >
+      
 
       <motion.div
+        onClick={(e) => e.stopPropagation()} // 👈 يمنع الإغلاق
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         id="pin-box"
@@ -138,9 +162,16 @@ export default function PinModal({ correctPin, onClose, onSuccess }: any) {
             <input
               key={i}
               ref={(el) => {inputsRef.current[i] = el}}
-              type="password"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               maxLength={1}
-              value={digit}
+              value={visibleIndex === i
+                ? digit          // 👁 يظهر الرقم
+                : digit
+                ? "•"          // 🔒 يظهر *
+                : ""
+               }
               disabled={locked}
               onChange={(e)=>handleChange(e.target.value, i)}
               onKeyDown={(e)=>handleKeyDown(e, i)}
@@ -166,7 +197,7 @@ export default function PinModal({ correctPin, onClose, onSuccess }: any) {
           </button>
 
           <button
-            onClick={handleSubmit}
+            onClick={() => handleSubmit()}
             className="flex-1 px-3 py-2 bg-indigo-600 rounded-xl hover:bg-indigo-500"
           >
             {t("confirm")}

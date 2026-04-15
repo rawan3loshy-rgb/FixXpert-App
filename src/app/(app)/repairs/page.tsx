@@ -255,8 +255,7 @@ ${url}`
     <PageWrapper>
       <Card>
        
-        <BackButton />
-
+        
         {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
 

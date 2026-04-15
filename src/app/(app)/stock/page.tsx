@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase"
 import Card from "@/components/ui/card"
 import PageWrapper from "@/components/ui/page-wrapper"
 import { getLang } from "@/lib/text"
+import PinModal from "@/components/ui/pin-modal"
 
 type StockItem = {
   id: string
@@ -65,11 +66,16 @@ export default function StockPage() {
   const itemRefs = useRef<(HTMLDivElement | null)[]>([])
   const [draftItems, setDraftItems] = useState<StockItem[]>([])
   const firstLoad = useRef(true)
+
+  // ✅ Pin Modal
+  const [unlocked, setUnlocked] = useState(false)
+  const [showPin, setShowPin] = useState(false)
+  const [adminPin, setAdminPin] = useState("")
   
 
   // ✅ CAPACITY OPTIONS
   const capacities = [
-    "32GB","64GB","128GB","256GB","512GB","1TB","2TB"
+    "-","32GB","64GB","128GB","256GB","512GB","1TB","2TB"
   ]
 
   // 🌍 LANG
@@ -99,11 +105,20 @@ export default function StockPage() {
       if (t.data) setTypes(t.data)
       if (q.data) setQualities(q.data)
 
+     const { data: settings } = await supabase
+      .from("shops")
+      .select("profit_pin")
+      .eq("shop_id", userId)   // ✅ هذا أهم سطر
+      .maybeSingle()
+
+      if (settings?.profit_pin) setAdminPin(settings.profit_pin)  
+      console.log("SETTINGS:", settings)
      
     }
-
+    
     load()
   }, [userId])
+  
 
   // 🔍 SEARCH
   const filteredDevices = devices.filter(d =>
@@ -218,14 +233,55 @@ export default function StockPage() {
 }
   return (
     <PageWrapper>
-
+     {showPin && (
+     <PinModal
+     correctPin={adminPin}
+     onSuccess={()=>{
+      setUnlocked(true)
+      setShowPin(false)
+      
+     }}
+     onClose={()=>setShowPin(false)}
+     />
+     )}
       <div className="space-y-6">
 
-        <h1 className="text-2xl md:text-3xl font-bold">
-          📦 {lang==="de"?"Lagerverwaltung":"Stock Management"}
-        </h1>
+       <div className="flex justify-between items-center">
+
+  <h1 className="text-2xl md:text-3xl font-bold">
+    📦 {lang==="de"?"Lagerverwaltung":"Stock Management"}
+  </h1>
+
+  <div className="flex items-center gap-2">
+
+    {unlocked ? (
+      <>
+        <span className="text-green-400 text-sm">
+          🔓 {lang==="de"?"Admin Modus":"Admin Mode"}
+        </span>
+
+        <button
+          onClick={() => setUnlocked(false)}
+          className="px-3 py-1 bg-red-600 rounded-lg text-sm"
+        >
+          🔒 {lang==="de"?"Sperren":"Lock"}
+        </button>
+      </>
+    ) : (
+      <button
+        onClick={() => setShowPin(true)}
+        className="px-3 py-1 bg-indigo-600 rounded-lg text-sm"
+      >
+        🔓 {lang==="de"?"Freischalten":"Unlock"}
+      </button>
+    )}
+
+  </div>
+
+</div>
 
         {/* ================= ADD ================= */}
+     
         <Card>
 
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
@@ -324,7 +380,13 @@ export default function StockPage() {
           </div>
 
           <button
-           onClick={addItem}
+           onClick={()=>{
+            if (!unlocked) {
+            setShowPin(true)
+            return
+            }
+           addItem()
+           }}
             disabled={!selectedDevice || !type || !quality}
             className={`mt-4 w-full py-2 rounded-xl text-white font-semibold ${
             (!selectedDevice || !type || !quality)
@@ -444,6 +506,11 @@ export default function StockPage() {
            {draftItems.length > 0 && (
           <button
            onClick={async () => {
+
+           if (!unlocked) {
+            setShowPin(true)
+            return
+           }
 
             if (!userId) return
 
@@ -624,7 +691,13 @@ export default function StockPage() {
 
                   {/* ➖ */}
                  <button
-                 onClick={()=>decrease(item)}
+                 onClick={()=>{
+                 if (!unlocked) {
+                 setShowPin(true)
+                 return
+                 }
+                 decrease(item)
+                 }}
                  className="w-10 h-10 bg-red-600 rounded-lg text-white text-lg"
                  >
                  -
@@ -635,6 +708,11 @@ export default function StockPage() {
                  type="number"
                  value={item.quantity}
                  onChange={async (e)=>{
+
+                 if (!unlocked) {
+                 setShowPin(true)
+                 return
+                 }
                  const newQty = Math.max(0, Number(e.target.value))
 
                  setItems(prev =>
@@ -653,7 +731,13 @@ export default function StockPage() {
 
                  {/* ➕ */}
                  <button
-                   onClick={()=>increase(item)}
+                   onClick={()=>{
+                   if (!unlocked) {
+                   setShowPin(true)
+                   return
+                   }
+                   increase(item)
+                   }}
                    className="w-10 h-10 bg-blue-600 rounded-lg text-white text-lg"
                    >
                    +
