@@ -6,6 +6,7 @@ import Card from "@/components/ui/card"
 import PageWrapper from "@/components/ui/page-wrapper"
 import { getLang } from "@/lib/text"
 import PinModal from "@/components/ui/pin-modal"
+import * as XLSX from "xlsx"
 
 type StockItem = {
   id: string
@@ -219,6 +220,24 @@ export default function StockPage() {
     setItems(p => p.map(i => i.id === item.id ? { ...i, quantity: newQty } : i))
     await supabase.from("stock_items").update({ quantity: newQty }).eq("id", item.id)
   }
+  const exportToExcel = () => {
+  if (!items.length) return
+
+  const data = items.map(item => ({
+    Device: item.device,
+    Type: getTypeLabel(item.type),
+    Quality: getQualityLabel(item.quality),
+    Capacity: item.capacity || "-",
+    Quantity: item.quantity
+  }))
+
+  const worksheet = XLSX.utils.json_to_sheet(data)
+
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Stock")
+
+  XLSX.writeFile(workbook, "stock.xlsx")
+}
 
   const getTypeLabel = (key:string) =>
     types.find(t=>t.key===key)?.[lang==="de"?"label_de":"label_en"]
@@ -231,6 +250,7 @@ export default function StockPage() {
   if (qty === 1) return "!bg-yellow-400/80 text-black backdrop-blur"
   return "!bg-green-500/80 text-white backdrop-blur"
 }
+
   return (
     <PageWrapper>
      {showPin && (
@@ -283,7 +303,7 @@ export default function StockPage() {
         {/* ================= ADD ================= */}
      
         <Card>
-
+        
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
 
             {/* SEARCH */}
@@ -573,17 +593,26 @@ export default function StockPage() {
            >
            {lang==="de" ? "Alle Hinzufügen" : "Add All"}
           </button>
+          
           )}
+             <div className="flex justify-end mb-3">
+           <button
+           onClick={exportToExcel}
+           className="mt-3 w-full py-2 bg-orange-600 rounded-xl text-white font-semibold"
+           >
+           Export Excel
+           </button>
+          </div>
         </Card>
 
         {/* ================= FILTER ================= */}
         <Card>
-
-          <h2 className="text-sm mb-3 text-slate-400">
+       
+          <h2 className="text-lg font-semibold mb-4 text-slate-300">
             {lang==="de"?"Filter":"Filter"}
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
 
             <input value={fDevice} onChange={(e)=>setFDevice(e.target.value)} placeholder={lang==="de"?"Gerät suchen":"Search device"} className="bg-white/5 px-2 rounded-lg"/>
 
@@ -618,7 +647,7 @@ export default function StockPage() {
           </div>
 
         </Card>
-
+       
         {/* ================= LIST ================= */}
         <Card>
           <div className="hidden md:grid grid-cols-12 gap-2 px-2 text-xs text-slate-400 mb-2 border-b border-white/10 pb-2">
@@ -742,7 +771,7 @@ export default function StockPage() {
                    >
                    +
                   </button>
-
+                  
                 </div>
                 </div>
 

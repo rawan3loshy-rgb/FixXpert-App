@@ -189,6 +189,52 @@ tooManyAttempts: {
   de: "Zu viele Versuche",
  
 },
+
+usedDevices: {
+  en: "Used Devices",
+  de: "Gebrauchte Geräte"
+},
+usedDeviceAdded: {
+  en: "Device added",
+  de: "Gerät hinzugefügt"
+},
+usedDeviceDeleted: {
+  en: "Device deleted",
+  de: "Gerät Gelöscht"
+},
+
+unlock: {
+  en: "Unlock",
+  de: "Freischalten"
+},
+
+lock: {
+  en: "Lock",
+  de: "Sperren"
+},
+
+addDevice: {
+  en: "Add Device",
+  de: "Gerät hinzufügen"
+},
+
+model: {
+  en: "Model",
+  de: "Modell"
+},
+
+
+
+quantity: {
+  en: "Quantity",
+  de: "Menge"
+},
+
+search: {
+  en: "Search...",
+  de: "Suchen..."
+},
+
 fixed: {
   en: "Fixed",
   de: "Repariert"

@@ -22,6 +22,7 @@ export default function Sidebar({ collapsed }: Props){
     { label: t("stock"), icon: "📦", path: "/stock" },
     { label: t("orderparts"), icon: "📥", path: "/order-parts" },
     { label: t("notice"), icon: "📝", path: "/notice" },
+    { label: t("usedDevices"), icon: "📲", path: "/used-devices" },
   ]
 
   return(
