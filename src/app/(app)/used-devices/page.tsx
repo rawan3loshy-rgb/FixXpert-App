@@ -31,6 +31,10 @@ export default function UsedDevicesPage() {
   const [model, setModel] = useState("")
   const [description, setDescription] = useState("")
   const [qty, setQty] = useState(1)
+
+  const [editingDevice, setEditingDevice] = useState<Device | null>(null)
+  const [editModel, setEditModel] = useState("")
+  const [editDescription, setEditDescription] = useState("")
  
   useEffect(() => {
   setLang(getLang())
@@ -162,6 +166,28 @@ const addDevice = async () => {
       prev.map(i => i.id === item.id ? { ...i, quantity: newQty } : i)
     )
   }
+  const saveEdit = async () => {
+  if (!editingDevice) return
+
+  await supabase
+    .from("used_devices")
+    .update({
+      model: editModel,
+      description: editDescription
+    })
+    .eq("id", editingDevice.id)
+
+  // تحديث UI
+  setDevices(prev =>
+    prev.map(d =>
+      d.id === editingDevice.id
+        ? { ...d, model: editModel, description: editDescription }
+        : d
+    )
+  )
+
+  setEditingDevice(null)
+}
   
   return (
     
@@ -264,6 +290,19 @@ const addDevice = async () => {
 
                 <div className="flex items-center gap-2">
 
+                    {unlocked && (
+                   <button
+                     onClick={()=>{
+                     setEditingDevice(item)
+                     setEditModel(item.model)
+                     setEditDescription(item.description)
+                     }}
+                      className="text-yellow-400 hover:text-yellow-600"
+                     >
+                      ✏️ {t("edit")}
+                     </button>
+                  )}
+
                   {unlocked && (
                     <button
                       onClick={()=>updateQty(item, item.quantity - 1)}
@@ -292,6 +331,7 @@ const addDevice = async () => {
                       ✕
                     </button>
                   )}
+                
 
                 </div>
 
@@ -310,6 +350,51 @@ const addDevice = async () => {
 
       {toast === "add" && `${t("usedDeviceAdded")} ✅`}
       {toast === "delete" && `${t("usedDeviceDeleted")} ❌`}
+
+    </div>
+
+  </div>
+)}
+{editingDevice && (
+  <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/70 backdrop-blur">
+
+    <div className="bg-slate-900 p-6 rounded-2xl w-96 border border-white/10 shadow-2xl">
+
+      <h2 className="text-lg font-bold mb-4 text-center">
+        {t("editDevice")}
+      </h2>
+
+      <input
+        value={editModel}
+        onChange={(e)=>setEditModel(e.target.value)}
+        placeholder={t("model")}
+        className="w-full mb-3 px-3 py-2 bg-white/5 rounded-lg"
+      />
+
+      <input
+        value={editDescription}
+        onChange={(e)=>setEditDescription(e.target.value)}
+        placeholder={t("description")}
+        className="w-full mb-4 px-3 py-2 bg-white/5 rounded-lg"
+      />
+
+      <div className="flex gap-2">
+
+        <button
+          onClick={()=>setEditingDevice(null)}
+          className="flex-1 py-2 bg-slate-700 rounded-xl"
+        >
+          {t("cancel")}
+        </button>
+
+        <button
+          onClick={saveEdit}
+          className="flex-1 py-2 bg-green-600 rounded-xl"
+        >
+          {t("save")}
+        </button>
+
+      </div>
 
     </div>
 

@@ -27,12 +27,19 @@ export default function AdminDashboard(){
   const [notifications,setNotifications] = useState<string[]>([])
   const [search,setSearch] = useState("")
 
+  // ✅ FIX HYDRATION
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   useEffect(()=>{
+    if (!mounted) return
+
     loadStats()
 
-    const interval = setInterval(()=>{
-      loadStats()
-    },10000)
+    const interval = setInterval(loadStats, 10000)
 
     const channel = supabase
       .channel("admin-live")
@@ -47,30 +54,39 @@ export default function AdminDashboard(){
       supabase.removeChannel(channel)
     }
 
-  },[])
+  },[mounted])
 
   async function loadStats(){
     try{
 
       setLoading(true)
 
+      const now = new Date()
+
+      const today = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      ).toISOString()
+
+      const startOfMonth = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        1
+      )
+
       const { count: shopsCount } = await supabase
         .from("shops")
         .select("*",{ count:"exact", head:true })
 
-      const today = new Date().toISOString().split("T")[0]
-
       const { count: repairsTodayCount } = await supabase
         .from("repairs")
         .select("*",{ count:"exact", head:true })
-        .gte("created_at",today)
+        .gte("created_at", today)
 
       const { count: totalRepairsCount } = await supabase
         .from("repairs")
         .select("*",{ count:"exact", head:true })
-
-      const startOfMonth = new Date()
-      startOfMonth.setDate(1)
 
       const { data: revenueData } = await supabase
         .from("subscriptions")
@@ -130,6 +146,9 @@ export default function AdminDashboard(){
     a.click()
   }
 
+  // ❌ لا ترندر قبل mount
+  if (!mounted) return null
+
   return(
 
     <div className="max-w-7xl mx-auto space-y-10">
@@ -187,41 +206,27 @@ export default function AdminDashboard(){
         <Card title="Revenue" value={`€${revenue}`} success/>
       </div>
 
-      {/* MAIN */}
-      <div className="grid grid-cols-3 gap-6">
+      {/* CHART */}
+      <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-xl">
 
-        <div className="col-span-2 bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-xl">
+        <h2 className="mb-4 font-semibold">Repairs Growth</h2>
 
-          <h2 className="mb-4 font-semibold">Repairs Growth</h2>
-
-          {loading ? "Loading..." : (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <XAxis dataKey="date"/>
-                <YAxis/>
-                <Tooltip />
-                <Line 
-                  type="monotone"
-                  dataKey="repairs"
-                  stroke="#6366f1"
-                  strokeWidth={3}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-
-        </div>
-
-        <div className="space-y-6">
-
-          <SystemStatus/>
-
-          <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
-            <TopShops/>
-          </div>
-
-        </div>
+        {loading ? "Loading..." : (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <XAxis dataKey="date"/>
+              <YAxis/>
+              <Tooltip />
+              <Line 
+                type="monotone"
+                dataKey="repairs"
+                stroke="#6366f1"
+                strokeWidth={3}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
 
       </div>
 
@@ -236,6 +241,10 @@ export default function AdminDashboard(){
           <ActivityFeed/>
         </div>
 
+      </div>
+
+      <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
+        <TopShops/>
       </div>
 
     </div>
@@ -254,19 +263,6 @@ function Card({title,value,highlight,success}:any){
     `}>
       <p className="text-slate-400 text-sm">{title}</p>
       <p className="text-3xl font-bold mt-2">{value}</p>
-    </div>
-  )
-}
-
-/* STATUS */
-function SystemStatus(){
-  return(
-    <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
-      <h3 className="font-semibold">⚡ System Status</h3>
-      <div className="flex items-center gap-2 mt-3">
-        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-        All systems operational
-      </div>
     </div>
   )
 }

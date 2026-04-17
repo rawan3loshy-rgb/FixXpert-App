@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 
 const stages = [
@@ -17,7 +17,7 @@ export default function AdminRepairs(){
   const [selectedShop,setSelectedShop] = useState<any>(null)
 
   const [repairs,setRepairs] = useState<any[]>([])
-  const [allRepairs,setAllRepairs] = useState<any[]>([]) // 🔥 مهم
+  const [allRepairs,setAllRepairs] = useState<any[]>([])
 
   const [search,setSearch] = useState("")
   const [priority,setPriority] = useState("all")
@@ -25,9 +25,21 @@ export default function AdminRepairs(){
   const [dragged,setDragged] = useState<any>(null)
   const [view,setView] = useState<any>(null)
 
+  // ✅ FIX: منع تكرار realtime
+  const channelRef = useRef<any>(null)
+
   useEffect(()=>{
     init()
-    loadRepairs() // 🔥 يجيب كل التصليحات
+    loadRepairs()
+
+    return () => {
+      // ✅ CLEANUP
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+    }
+
   },[])
 
   async function init(){
@@ -55,7 +67,6 @@ export default function AdminRepairs(){
 
     const { data } = await query
 
-    // 🔥 إذا ما في shop → خزّن الكل
     if(!shopId){
       setAllRepairs(data || [])
     }
@@ -63,58 +74,68 @@ export default function AdminRepairs(){
     setRepairs(data || [])
   }
 
-  // REALTIME
+  // ✅ REALTIME (FIXED)
   function setupRealtime(){
-    supabase
-      .channel("repairs-max")
-      .on("postgres_changes",
-        { event:"*", schema:"public", table:"repairs" },
-        payload=>{
 
-          setRepairs(prev=>{
-            const updated = [...prev]
+  // ✅ احذف أي channel قديم بنفس الاسم
+  const existing = supabase.getChannels().find(c => c.topic === "realtime:repairs-max")
 
-            if(payload.eventType === "INSERT"){
-              updated.unshift(payload.new)
-            }
-
-            if(payload.eventType === "UPDATE"){
-              return updated.map(r =>
-                r.id === payload.new.id ? payload.new : r
-              )
-            }
-
-            if(payload.eventType === "DELETE"){
-              return updated.filter(r=>r.id !== payload.old.id)
-            }
-
-            return updated
-          })
-
-          // 🔥 نفس الشي للكل
-          setAllRepairs(prev=>{
-            const updated = [...prev]
-
-            if(payload.eventType === "INSERT"){
-              updated.unshift(payload.new)
-            }
-
-            if(payload.eventType === "UPDATE"){
-              return updated.map(r =>
-                r.id === payload.new.id ? payload.new : r
-              )
-            }
-
-            if(payload.eventType === "DELETE"){
-              return updated.filter(r=>r.id !== payload.old.id)
-            }
-
-            return updated
-          })
-        }
-      )
-      .subscribe()
+  if (existing) {
+    supabase.removeChannel(existing)
   }
+
+  const channel = supabase
+    .channel("repairs-max")
+    .on(
+      "postgres_changes",
+      { event:"*", schema:"public", table:"repairs" },
+      payload => {
+
+        setRepairs(prev => {
+          let updated = [...prev]
+
+          if(payload.eventType === "INSERT"){
+            updated.unshift(payload.new)
+          }
+
+          if(payload.eventType === "UPDATE"){
+            updated = updated.map(r =>
+              r.id === payload.new.id ? payload.new : r
+            )
+          }
+
+          if(payload.eventType === "DELETE"){
+            updated = updated.filter(r=>r.id !== payload.old.id)
+          }
+
+          return updated
+        })
+
+        setAllRepairs(prev => {
+          let updated = [...prev]
+
+          if(payload.eventType === "INSERT"){
+            updated.unshift(payload.new)
+          }
+
+          if(payload.eventType === "UPDATE"){
+            updated = updated.map(r =>
+              r.id === payload.new.id ? payload.new : r
+            )
+          }
+
+          if(payload.eventType === "DELETE"){
+            updated = updated.filter(r=>r.id !== payload.old.id)
+          }
+
+          return updated
+        })
+      }
+    )
+    .subscribe()
+
+  channelRef.current = channel
+}
 
   function onDragStart(repair:any){
     setDragged(repair)
@@ -162,7 +183,6 @@ export default function AdminRepairs(){
       .eq("id",id)
   }
 
-  // FILTER
   const filtered = repairs.filter(r=>{
 
     const customer = r.customer || r.customer_name || ""
@@ -187,7 +207,6 @@ export default function AdminRepairs(){
         ⚡ Repairs Command Center
       </h1>
 
-      {/* SHOW CURRENT SHOP */}
       {selectedShop && (
         <p className="text-sm text-gray-400">
           Showing: {selectedShop.shop_name}
@@ -217,7 +236,7 @@ export default function AdminRepairs(){
 
       </div>
 
-      {/* 🔥 SHOPS */}
+      {/* SHOPS */}
       {!selectedShop && (
 
         <div className="grid md:grid-cols-3 gap-4">
@@ -340,7 +359,7 @@ export default function AdminRepairs(){
         </div>
       )}
 
-      {/* VIEW */}
+      {/* MODAL */}
       {view && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
 

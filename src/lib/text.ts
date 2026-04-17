@@ -207,6 +207,19 @@ unlock: {
   en: "Unlock",
   de: "Freischalten"
 },
+deviceStock: {
+  en: "Phone Warehouse",
+  de: "Telefon Lager"
+},
+
+editDevice: {
+  en: "Edit Device",
+  de: "Gerät bearbeiten"
+},
+save: {
+  en: "Save",
+  de: "Speichern"
+},
 
 lock: {
   en: "Lock",
