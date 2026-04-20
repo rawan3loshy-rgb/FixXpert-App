@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [loading,setLoading] = useState(false)
   const [showPassword,setShowPassword] = useState(false)
   const [redirectTo, setRedirectTo] = useState("/dashboard")
-
+  const [showReset,setShowReset] = useState(false)
 
   useEffect(() => {
   const params = new URLSearchParams(window.location.search)
@@ -92,12 +92,28 @@ export default function LoginPage() {
 
     router.push(`/verify?email=${email}&redirect=${redirectTo}`)
   }
+ async function handleReset(){
 
+  if(!email){
+    showToast("Enter your email")
+    return
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`
+  })
+
+  if(error){
+    showToast(error.message)
+  } else {
+    showToast("Check your email 📩")
+  }
+}
   return(
     <AuthLayout>
 
       <h2 className="text-2xl font-bold mb-6">
-        Login
+        Anmelden
       </h2>
 
       <form onSubmit={handleLogin} className="space-y-5">
@@ -149,9 +165,37 @@ export default function LoginPage() {
         >
           {loading ? "Weiter..." : "Weiter"}
         </button>
+        {/* 🔥 FORGOT PASSWORD */}
+        <div className="text-right mt-2">
+         <button
+           type="button"
+           onClick={()=>setShowReset(true)}
+           className="text-sm text-indigo-400 hover:underline"
+           >
+           Passwort vergessen?
+          </button>
+        </div>
 
       </form>
+      {showReset && (
+      <div className="mt-6 space-y-3">
 
+         <input
+          placeholder="Email Eingeben"
+          value={email}
+          onChange={(e)=>setEmail(e.target.value)}
+          className="w-full p-4 rounded-xl bg-slate-800 border border-white/10"
+         />
+
+           <button
+            onClick={handleReset}
+            className="w-full h-12 rounded-xl bg-indigo-600"
+            >
+            Link zum Zurücksetzen senden
+           </button>
+
+       </div> 
+       )}
     </AuthLayout>
   )
 }
