@@ -8,10 +8,42 @@ export default function AdminSubscriptions(){
 
   const [subs,setSubs] = useState<any[]>([])
   const [loading,setLoading] = useState(true)
+  const [search,setSearch] = useState("")
 
   useEffect(()=>{
     load()
     checkExpired()
+
+    // 🔥 REALTIME (subscriptions + shops)
+    const channel = supabase
+      .channel("subscriptions-live")
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "subscriptions",
+        },
+        () => load()
+      )
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "shops",
+        },
+        () => load()
+      )
+
+      .subscribe()
+
+    return ()=>{
+      supabase.removeChannel(channel)
+    }
+
   },[])
 
   async function load(){
@@ -20,8 +52,14 @@ export default function AdminSubscriptions(){
 
     const { data, error } = await supabase
       .from("subscriptions")
-      .select("*")
-      .order("created_at",{ascending:false})
+      .select(`
+        *,
+        shops!fk_sub_shop (
+          email,
+          shop_name
+        )
+      `)
+      .order("created_at", { ascending: false })
 
     if(error){
       console.log(error)
@@ -70,14 +108,24 @@ export default function AdminSubscriptions(){
       return
     }
 
+    // 🔥 optimistic UI (بدون انتظار)
+    setSubs(prev =>
+      prev.map(s =>
+        s.id === id ? { ...s, status } : s
+      )
+    )
+
+    // 🔥 ربط منطقي مع shop
+    let shopStatus = "disabled"
+
+    if (status === "active") shopStatus = "active"
+    if (status === "pending") shopStatus = "pending"
+    if (status === "expired") shopStatus = "disabled"
+
     await supabase
       .from("shops")
-      .update({
-        status: status === "active" ? "active" : "disabled"
-      })
+      .update({ status: shopStatus })
       .eq("id",shop_id)
-
-    load()
   }
 
   async function extend(sub:any){
@@ -98,13 +146,26 @@ export default function AdminSubscriptions(){
       return
     }
 
+    // 🔥 optimistic update
+    setSubs(prev =>
+      prev.map(s =>
+        s.id === sub.id
+          ? { ...s, status:"active", end_date:newDate.toISOString() }
+          : s
+      )
+    )
+
     await supabase
       .from("shops")
       .update({ status:"active" })
       .eq("id",sub.shop_id)
-
-    load()
   }
+
+  // 🔍 FILTER
+  const filtered = subs.filter(s =>
+    (s.shops?.shop_name || "").toLowerCase().includes(search.toLowerCase()) ||
+    (s.shops?.email || "").toLowerCase().includes(search.toLowerCase())
+  )
 
   // 🔥 KPIs
   const totalRevenue = subs.reduce((sum,s)=>sum + (Number(s.price)||0),0)
@@ -125,6 +186,14 @@ export default function AdminSubscriptions(){
         </p>
       </div>
 
+      {/* SEARCH */}
+      <input
+        placeholder="Search shop or email..."
+        value={search}
+        onChange={(e)=>setSearch(e.target.value)}
+        className="w-full px-4 py-2 rounded-xl bg-slate-900 border border-white/10 focus:ring-2 focus:ring-indigo-500 outline-none"
+      />
+
       {/* KPIs */}
       <div className="grid md:grid-cols-3 gap-6">
 
@@ -135,8 +204,9 @@ export default function AdminSubscriptions(){
       </div>
 
       {/* TABLE HEADER */}
-      <div className="grid grid-cols-4 text-xs text-slate-400 px-4">
+      <div className="grid grid-cols-5 text-xs text-slate-400 px-4">
         <span>Shop</span>
+        <span>Email</span>
         <span>Plan</span>
         <span>Status</span>
         <span className="text-right">Actions</span>
@@ -147,20 +217,20 @@ export default function AdminSubscriptions(){
 
         {loading ? (
           <p className="text-slate-400 animate-pulse">Loading...</p>
-        ) : subs.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <p className="text-slate-500 text-center py-10">
             No subscriptions
           </p>
         ) : (
 
-          subs.map(s=>{
+          filtered.map(s=>{
 
             return(
               <motion.div
                 key={s.id}
                 whileHover={{ scale:1.02 }}
                 className="
-                  grid grid-cols-4 items-center
+                  grid grid-cols-5 items-center
                   bg-slate-900/60 backdrop-blur-xl
                   border border-white/10
                   p-4 rounded-xl
@@ -169,14 +239,19 @@ export default function AdminSubscriptions(){
                 "
               >
 
-                {/* INFO */}
+                {/* SHOP */}
                 <div>
                   <p className="font-semibold">
-                    {s.shop_name || "Unknown Shop"}
+                    {s.shops?.shop_name || "Unknown Shop"}
                   </p>
                   <p className="text-xs text-slate-400">
                     €{s.price}
                   </p>
+                </div>
+
+                {/* EMAIL */}
+                <div className="text-xs text-slate-400">
+                  {s.shops?.email || "—"}
                 </div>
 
                 {/* PLAN */}
@@ -247,7 +322,8 @@ function StatusBadge({status}:{status:string}){
   const styles:any = {
     active:"bg-green-500/20 text-green-400 border border-green-500/30",
     pending:"bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
-    expired:"bg-red-500/20 text-red-400 border border-red-500/30"
+    expired:"bg-red-500/20 text-red-400 border border-red-500/30",
+    disabled:"bg-red-700/20 text-red-500 border border-red-700/30"
   }
 
   return(

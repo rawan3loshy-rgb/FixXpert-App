@@ -8,6 +8,7 @@ import { UserMenu } from "@/components/ui/user-menu"
 import { t, setLang, getLang } from "@/lib/text"
 import Sidebar from "@/components/sidebar"
 import ProtectedRoute from "@/components/auth/protected-route"
+import { supabase } from "@/lib/supabase"
 
 export default function AppLayout({ children }: { children: ReactNode }) {
 
@@ -17,30 +18,118 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [open,setOpen] = useState(false)
   const [lang,setLangState] = useState<"en"|"de">("en")
   const [mounted,setMounted] = useState(false)
+  const [checking, setChecking] = useState(true)
+
+  // 🔥 مهم
+  const [shopId, setShopId] = useState<string | null>(null)
   const [shop, setShop] = useState<any>(null)
 
   // 🔥 SIDEBAR STATES
-  const [sidebarOpen, setSidebarOpen] = useState(false) // mobile
-  const [collapsed, setCollapsed] = useState(false) // desktop
-  const [hovered, setHovered] = useState(false) // 🔥 Notion hover
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
+  const [hovered, setHovered] = useState(false)
 
   const isPublic =
   pathname.startsWith("/track") ||
   pathname.startsWith("/login") ||
   pathname.startsWith("/signup")
 
+  // ✅ 1. أول شي نجيب shop_id
+  useEffect(() => {
+    async function loadShop() {
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setChecking(false)
+        return
+      }
+
+      const { data } = await supabase
+        .from("shops")
+        .select("*")
+        .eq("owner", user.id)
+        .single()
+
+      if (!data) {
+        setChecking(false)
+        return
+      }
+
+      setShopId(data.id)
+
+      // 🔥 check مباشر بدون انتظار realtime
+      if (data) {
+      setShop(data)      // 🔥 هذا السطر مهم
+      setShopId(data.id)
+
+      if (data.status !== "active") {
+      await supabase.auth.signOut()
+      window.location.href = "/blocked"
+      return
+     }
+     }
+
+      setChecking(false)
+    }
+
+    loadShop()
+  }, [])
+
+  // ✅ 2. REALTIME الحقيقي
+  useEffect(() => {
+
+    if (!shopId) return
+
+    const channel = supabase
+      .channel("shop-status")
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "shops",
+        },
+        async (payload: any) => {
+
+          // 🔥 أهم سطر
+          if (payload.new.id !== shopId) return
+
+          // 🔥 block فوري لأي حالة
+          if (payload.new.status !== "active") {
+            await supabase.auth.signOut()
+            window.location.href = `/blocked?status=${payload.new.status}`
+            console.log("REALTIME:", payload)
+          }
+        }
+        
+      )
+      .subscribe()
+    
+    return () => {
+      supabase.removeChannel(channel)
+      
+    }
+
+  }, [shopId])
 
   useEffect(()=>{
     setMounted(true)
     setLangState(getLang())
   },[])
-
+ 
   const changeLang = (l:"en"|"de")=>{
     setLang(l)
     setLangState(l)
     window.location.reload()
   }
-
+ if (checking) {
+  return (
+    <div className="h-screen flex items-center justify-center bg-black text-white">
+      Loading...
+    </div>
+  )
+  }
   if(!mounted) return null
   
   if (isPublic) {
