@@ -22,22 +22,33 @@ export default function PrintPage() {
   }, [id])
 
   const load = async () => {
-    const { data } = await supabase
+    const { data: repairData, error } = await supabase
       .from("repairs")
       .select("*")
       .eq("id", id)
       .single()
 
-    setRepair(data)
+    if (error || !repairData) return
 
-    setTimeout(() => {
-      window.print()
-    }, 500)
-    
+    const { data: shop } = await supabase
+      .from("shops")
+      .select("shop_id, shop_name, address, city, phone")
+      .eq("id", repairData.shop_id)
+      .single()
+
+    setRepair({
+      ...repairData,
+      shop
+    })
+
+    setTimeout(() => window.print(), 500)
   }
-  
 
   if (!repair) return null
+
+  const logoUrl = repair.shop?.shop_id
+    ? `https://zaydhnrctfmuujruvkzw.supabase.co/storage/v1/object/public/logos/${repair.shop.shop_id}/logo.png`
+    : null
 
   const trackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/track/${repair.order_number}`
 
@@ -47,61 +58,38 @@ export default function PrintPage() {
     return val
   }
 
-  // ✅ الحجم الحقيقي بدل scale
-  const getPageSize = () => {
-    switch (size) {
-      case "a5":
-        return { width: "148mm", height: "210mm" }
-      case "a6":
-        return { width: "105mm", height: "148mm" }
-      default:
-        return { width: "210mm", height: "297mm" }
-    }
-  }
-
-  const page = getPageSize()
+  const pageWidth = "210mm"
 
   return (
-    <div className={`print-container flex justify-center bg-gray-200 print:bg-white`}>
+    <div className="flex justify-center bg-gray-200 print:bg-white">
 
-      {/* ✅ FIX PRINT */}
       <style>
-     {`
-     @page {
-      size: ${size === "a5" ? "A5" : size === "a6" ? "A6" : "A4"};
-      margin: 0; /* 🔥 أهم شي */
-     }
+        {`
+        @page {
+          size: A4;
+          margin: 0;
+        }
 
-      @media print {
+        @media print {
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            background: white !important;
+          }
 
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      height: auto !important;
-      overflow: hidden !important;
-       background: white !important;
-     }
- 
-      /* 🔥 يمنع أي overflow يعمل صفحة ثانية */
-      body > * {
-      page-break-after: avoid;
-      break-after: avoid;
-      }
- 
-      * {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-      color: black !important;
-      border-color: black !important;
-       }
+          * {
+            color: black !important;
+            border-color: black !important;
+          }
         }
       `}
       </style>
 
       <div
         style={{
-          width: page.width,
-          minHeight: page.height, // 🔥 بدل height
+          width: pageWidth,
+          minHeight: "260mm", // 🔥 فراغ تحت
           background: "white"
         }}
         className="text-black p-10 print:p-6"
@@ -110,6 +98,7 @@ export default function PrintPage() {
         {/* HEADER */}
         <div className="flex justify-between items-start mb-10 border-b-2 border-black pb-6">
 
+          {/* LEFT */}
           <div>
             <h1 className="text-3xl font-bold mb-2">
               {t("repairReceipt", "de")}
@@ -124,8 +113,31 @@ export default function PrintPage() {
             </p>
           </div>
 
-          <div className="w-24 h-24 border-2 border-black flex items-center justify-center text-xs">
-            LOGO
+          {/* RIGHT */}
+          <div className="flex items-start gap-4">
+
+            {/* SHOP INFO */}
+            <div className="text-xs text-right leading-5">
+              <p className="font-semibold">
+                {repair.shop?.shop_name}
+              </p>
+              <p>{repair.shop?.address}</p>
+              <p>{repair.shop?.city}</p>
+              <p>{repair.shop?.phone}</p>
+            </div>
+
+            {/* LOGO */}
+            <div className="w-20 h-20 flex items-center justify-center">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  className="max-w-full max-h-full object-contain"
+                />
+              ) : (
+                <span className="text-xs text-gray-400">No Logo</span>
+              )}
+            </div>
+
           </div>
 
         </div>
@@ -134,64 +146,57 @@ export default function PrintPage() {
         <div className="grid grid-cols-2 gap-6">
 
           <div className="border-2 border-black rounded-xl p-5">
-            <p className="text-xs mb-3 uppercase font-bold">
-              {t("customerLabel", "de")}
-            </p>
-
-            <p><b>{t("customerLabel", "de")}:</b> {safe(repair.customer)}</p>
-            <p><b>{t("phone", "de")}:</b> {safe(repair.phone)}</p>
+            <p className="text-xs mb-3 uppercase font-bold">Kunde</p>
+            <p><b>Kunde:</b> {safe(repair.customer)}</p>
+            <p><b>Telefon:</b> {safe(repair.phone)}</p>
           </div>
 
           <div className="border-2 border-black rounded-xl p-5">
-            <p className="text-xs mb-3 uppercase font-bold">
-              {t("deviceLabel", "de")}
-            </p>
-
-            <p><b>{t("deviceLabel", "de")}:</b> {safe(repair.device)}</p>
-            <p><b>{t("imei", "de")}:</b> {safe(repair.imei)}</p>
+            <p className="text-xs mb-3 uppercase font-bold">Gerät</p>
+            <p><b>Gerät:</b> {safe(repair.device)}</p>
+            <p><b>IMEI:</b> {safe(repair.imei)}</p>
           </div>
 
           <div className="border-2 border-black rounded-xl p-5 col-span-2">
-            <p className="text-xs mb-3 uppercase font-bold">
-              {t("problemLabel", "de")}
-            </p>
-
-            <p><b>{t("problemLabel", "de")}:</b> {safe(repair.problem)}</p>
-            <p><b>{t("description", "de")}:</b> {safe(repair.description)}</p>
+            <p className="text-xs mb-3 uppercase font-bold">Fehler</p>
+            <p><b>Fehler:</b> {safe(repair.problem)}</p>
+            <p><b>Beschreibung:</b> {safe(repair.description)}</p>
           </div>
 
           <div className="border-2 border-black rounded-xl p-5">
-            <p className="text-xs mb-3 uppercase font-bold">
-              {t("priceLabel", "de")}
-            </p>
-
-            <p className="text-xl font-bold">
-              {repair.price || 0} €
-            </p>
+            <p className="text-xs mb-3 uppercase font-bold">Preis</p>
+            <p className="text-xl font-bold">{repair.price || 0} €</p>
           </div>
 
           <div className="border-2 border-black rounded-xl p-5">
-            <p className="text-xs mb-3 uppercase font-bold">
-              {t("statusLabel", "de")}
-            </p>
-
+            <p className="text-xs mb-3 uppercase font-bold">Status</p>
             <p>{tStatus(repair.status, "de")}</p>
           </div>
 
+          {/* ✅ row 1 */}
           <div className="border-2 border-black rounded-xl p-5">
             <p className="text-xs mb-3 uppercase font-bold">
-              {t("receiverLabel", "de")}
+              Angenommen von
             </p>
-
             <p>{safe(repair.received_by)}</p>
           </div>
 
           <div className="border-2 border-black rounded-xl p-5">
             <p className="text-xs mb-3 uppercase font-bold">
-              {t("technicianLabel", "de")}
+              Techniker
+            </p>
+            <p>{safe(repair.technician)}</p>
+          </div>
+
+          {/* ✅ row 2 full width */}
+          <div className="border-2 border-black rounded-xl p-5 col-span-2">
+            <p className="text-xs mb-3 uppercase font-bold">
+              Abholzeit
             </p>
 
-            <p>{safe(repair.technician)}</p>
+            <div className="border-b-2 border-black h-8 flex items-end">
+              {safe(repair.pickup_time)}
+            </div>
           </div>
 
         </div>
@@ -200,17 +205,13 @@ export default function PrintPage() {
         <div className="mt-16 border-t-2 border-black pt-8 flex justify-between items-end">
 
           <div>
-            <p className="text-sm">
-              {t("signatureCustomer", "de")}
-            </p>
+            <p className="text-sm">Unterschrift Kunde</p>
             <div className="w-56 h-12 border-b-2 border-black mt-6"></div>
           </div>
 
           <div className="text-center">
             <QRCode value={trackUrl} size={90} />
-            <p className="text-xs mt-2">
-              {t("trackRepair", "de")}
-            </p>
+            <p className="text-xs mt-2">Reparatur verfolgen</p>
           </div>
 
         </div>

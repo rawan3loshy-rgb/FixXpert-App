@@ -62,6 +62,43 @@ useEffect(() => {
 
 }, [shopId])
 
+async function uploadLogo(e:any){
+
+  const file = e.target.files[0]
+  if(!file) return
+
+  const { data, error: userError } = await supabase.auth.getUser()
+
+  if(userError || !data.user){
+    alert("Not authenticated")
+    return
+  }
+
+  const user = data.user
+
+  const fileName = `${user.id}/logo.png`
+
+  const { error } = await supabase.storage
+    .from("logos")
+    .upload(fileName, file, {
+      upsert: true
+    })
+
+  if(error){
+    alert(error.message)
+    return
+  }
+
+  const { data: publicUrl } = supabase.storage
+    .from("logos")
+    .getPublicUrl(fileName)
+
+  setShop({
+    ...shop,
+    logo_url: publicUrl.publicUrl
+  })
+}
+
 
 async function loadShop(){
 
@@ -156,9 +193,12 @@ email: shop.email,
 city: shop.city,
 address: shop.address,
 phone: shop.phone,
-status: shop.status
+status: shop.status,
+profit_pin: shop.profit_pin,
+logo_url: shop.logo_url
 })
 .eq("id", shop.id)
+
 
 if(error){
 alert(error.message)
@@ -219,7 +259,24 @@ Shop analytics & performance overview
 <Input label="City" value={shop.city} onChange={(v:any)=>setShop({...shop,city:v})}/>
 <Input label="Address" value={shop.address || ""} onChange={(v:any)=>setShop({...shop,address:v})}/>
 <Input label="Phone" value={shop.phone || ""} onChange={(v:any)=>setShop({...shop,phone:v})}/>
+<Input label="Profit PIN" value={shop.profit_pin || ""} onChange={(v:any)=>setShop({...shop, profit_pin:v})}/>
+<div>
+  <p className="text-xs text-slate-400 mb-1">Logo</p>
 
+  <input
+    type="file"
+    accept="image/*"
+    onChange={uploadLogo}
+    className="w-full text-sm"
+  />
+
+  {shop.logo_url && (
+    <img
+      src={shop.logo_url}
+      className="mt-3 h-16 object-contain"
+    />
+  )}
+</div>
 <div>
 <p className="text-xs text-slate-400 mb-1">Status</p>
 <select

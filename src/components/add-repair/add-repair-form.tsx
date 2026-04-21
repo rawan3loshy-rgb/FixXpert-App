@@ -37,6 +37,7 @@ export default function AddRepairForm(){
   const [receivedBy,setReceivedBy] = useState("")
   const today = new Date().toLocaleDateString()
   const { showToast } = useToast()
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
 
   const [shopId,setShopId] = useState<string | null>(null)
 
@@ -60,7 +61,7 @@ export default function AddRepairForm(){
 
     const { data: shop } = await supabase
       .from("shops")
-      .select("id")
+      .select("id, logo_url")
       .eq("shop_id", user.id)
       .single()
 
@@ -70,6 +71,7 @@ export default function AddRepairForm(){
     }
 
     setShopId(shop.id)
+    setLogoUrl(shop.logo_url)
 
     // employees
     const { data: emp } = await supabase
@@ -168,7 +170,8 @@ export default function AddRepairForm(){
         description,
         price: Number(price || 0),
         received_by: receivedBy,
-        shop_id: shopId
+        shop_id: shopId,
+        logo_url: logoUrl
       })
 
       if (!result.success) {

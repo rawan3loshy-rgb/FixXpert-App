@@ -21,6 +21,8 @@ export const repairSchema = z.object({
   description: z.string().optional(),
 
   received_by: z.string().optional(),
+  
+  logo_url: z.string().optional(),
 
   returned: z.boolean(),
 

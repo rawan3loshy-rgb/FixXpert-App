@@ -138,13 +138,39 @@ export default function ResetPassword(){
         </div>
 
         {/* CONFIRM */}
-        <input
-          type="password"
+        <div className="relative">
+         <input
+          type={showPassword ? "text" : "password"}
           placeholder={t[lang].confirm}
           value={confirm}
           onChange={(e)=>setConfirm(e.target.value)}
-          className="w-full p-3 rounded-lg bg-slate-800 border border-white/10"
-        />
+          className="w-full p-3 rounded-lg bg-slate-800 border border-white/10 pr-10"
+          />
+
+          <button
+           type="button"
+           title={showPassword ? t[lang].hide : t[lang].show}
+           onClick={()=>setShowPassword(!showPassword)}
+           className="absolute right-3 top-3 text-slate-400 hover:text-white transition"
+           >
+           {showPassword ? (
+           // 🙈
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M3 3l18 18M10.584 10.587a2.25 2.25 0 003.182 3.182M9.88 4.24A10.97 10.97 0 0112 4.5c5.25 0 9.27 3.438 10.5 7.5a11.04 11.04 0 01-4.043 5.568M6.61 6.61A11.042 11.042 0 001.5 12c.57 1.95 1.76 3.74 3.39 5.11" />
+              </svg>
+           ) : (
+           // 👁️
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M2.25 12c1.5-4.5 5.25-7.5 9.75-7.5s8.25 3 9.75 7.5c-1.5 4.5-5.25 7.5-9.75 7.5S3.75 16.5 2.25 12z" />
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            )}
+          </button>
+        </div>
+        
 
         {/* RULES */}
         <div className="text-sm space-y-1">
