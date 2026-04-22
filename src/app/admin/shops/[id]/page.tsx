@@ -67,16 +67,11 @@ async function uploadLogo(e:any){
   const file = e.target.files[0]
   if(!file) return
 
-  const { data, error: userError } = await supabase.auth.getUser()
+  // ❌ لا تجيب user.id
+  // const user = ...
 
-  if(userError || !data.user){
-    alert("Not authenticated")
-    return
-  }
-
-  const user = data.user
-
-  const fileName = `${user.id}/logo.png`
+  // ✅ استخدم shop.id
+  const fileName = `${shop.id}/logo-${Date.now()}.png`
 
   const { error } = await supabase.storage
     .from("logos")
@@ -93,6 +88,7 @@ async function uploadLogo(e:any){
     .from("logos")
     .getPublicUrl(fileName)
 
+  // 🔥 خزن الرابط
   setShop({
     ...shop,
     logo_url: publicUrl.publicUrl

@@ -38,7 +38,7 @@ export default function AddRepairForm(){
   const today = new Date().toLocaleDateString()
   const { showToast } = useToast()
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
-
+  const [shopName, setShopName] = useState<string | null>(null)
   const [shopId,setShopId] = useState<string | null>(null)
 
   // =========================
@@ -61,7 +61,7 @@ export default function AddRepairForm(){
 
     const { data: shop } = await supabase
       .from("shops")
-      .select("id, logo_url")
+      .select("id, logo_url, shop_name")
       .eq("shop_id", user.id)
       .single()
 
@@ -72,6 +72,7 @@ export default function AddRepairForm(){
 
     setShopId(shop.id)
     setLogoUrl(shop.logo_url)
+    setShopName(shop.shop_name)
 
     // employees
     const { data: emp } = await supabase
@@ -171,6 +172,7 @@ export default function AddRepairForm(){
         price: Number(price || 0),
         received_by: receivedBy,
         shop_id: shopId,
+        shop_name: shopName,
         logo_url: logoUrl
       })
 
@@ -321,9 +323,10 @@ export default function AddRepairForm(){
                   {t("selectEmployee") || "Select employee"}
                 </option>
 
-                {employees.map(emp => (
-                  <option key={emp.id} value={emp.name}>
-                    {emp.name}
+                {Array.isArray(employees) &&
+                 employees.map((emp) => (
+                 <option key={emp.id} value={emp.name}>
+                   {emp.name}
                   </option>
                 ))}
               </select>

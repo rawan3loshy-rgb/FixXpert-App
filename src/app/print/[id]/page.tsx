@@ -16,23 +16,30 @@ export default function PrintPage() {
 
   const [repair, setRepair] = useState<any>(null)
 
+  // ✅ طباعة ثابتة (ما تعتمد على اللوجو)
+  useEffect(() => {
+    if (repair) {
+      setTimeout(() => window.print(), 500)
+    }
+  }, [repair])
+
   useEffect(() => {
     if (!id) return
     load()
   }, [id])
 
   const load = async () => {
-    const { data: repairData, error } = await supabase
+    const { data: repairData } = await supabase
       .from("repairs")
       .select("*")
       .eq("id", id)
       .single()
 
-    if (error || !repairData) return
+    if (!repairData) return
 
     const { data: shop } = await supabase
       .from("shops")
-      .select("shop_id, shop_name, address, city, phone")
+      .select("id, shop_name, address, city, phone, logo_url")
       .eq("id", repairData.shop_id)
       .single()
 
@@ -40,15 +47,11 @@ export default function PrintPage() {
       ...repairData,
       shop
     })
-
-    setTimeout(() => window.print(), 500)
   }
 
   if (!repair) return null
 
-  const logoUrl = repair.shop?.shop_id
-    ? `https://zaydhnrctfmuujruvkzw.supabase.co/storage/v1/object/public/logos/${repair.shop.shop_id}/logo.png`
-    : null
+  const logoUrl = repair.shop?.logo_url || null
 
   const trackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/track/${repair.order_number}`
 
@@ -57,8 +60,6 @@ export default function PrintPage() {
     if (typeof val === "string" && !val.trim()) return "Nicht angegeben"
     return val
   }
-
-  const pageWidth = "210mm"
 
   return (
     <div className="flex justify-center bg-gray-200 print:bg-white">
@@ -74,7 +75,6 @@ export default function PrintPage() {
           html, body {
             margin: 0 !important;
             padding: 0 !important;
-            overflow: hidden !important;
             background: white !important;
           }
 
@@ -88,8 +88,8 @@ export default function PrintPage() {
 
       <div
         style={{
-          width: pageWidth,
-          minHeight: "260mm", // 🔥 فراغ تحت
+          width: "210mm",
+          minHeight: "260mm",
           background: "white"
         }}
         className="text-black p-10 print:p-6"
@@ -127,15 +127,33 @@ export default function PrintPage() {
             </div>
 
             {/* LOGO */}
-            <div className="w-20 h-20 flex items-center justify-center">
+            <div className="flex items-center justify-center h-[80px] w-[140px]">
+
               {logoUrl ? (
                 <img
                   src={logoUrl}
-                  className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    // 🔥 fallback إذا خربت الصورة
+                    e.currentTarget.style.display = "none"
+                  }}
+                  onLoad={(e) => {
+                    const img = e.currentTarget
+                    const ratio = img.naturalWidth / img.naturalHeight
+
+                    if (ratio > 2) {
+                      img.style.height = "50px"
+                    } else {
+                      img.style.height = "80px"
+                    }
+
+                    img.style.width = "auto"
+                  }}
+                  className="object-contain"
                 />
               ) : (
                 <span className="text-xs text-gray-400">No Logo</span>
               )}
+
             </div>
 
           </div>
@@ -173,27 +191,18 @@ export default function PrintPage() {
             <p>{tStatus(repair.status, "de")}</p>
           </div>
 
-          {/* ✅ row 1 */}
           <div className="border-2 border-black rounded-xl p-5">
-            <p className="text-xs mb-3 uppercase font-bold">
-              Angenommen von
-            </p>
+            <p className="text-xs mb-3 uppercase font-bold">Angenommen von</p>
             <p>{safe(repair.received_by)}</p>
           </div>
 
           <div className="border-2 border-black rounded-xl p-5">
-            <p className="text-xs mb-3 uppercase font-bold">
-              Techniker
-            </p>
+            <p className="text-xs mb-3 uppercase font-bold">Techniker</p>
             <p>{safe(repair.technician)}</p>
           </div>
 
-          {/* ✅ row 2 full width */}
           <div className="border-2 border-black rounded-xl p-5 col-span-2">
-            <p className="text-xs mb-3 uppercase font-bold">
-              Abholzeit
-            </p>
-
+            <p className="text-xs mb-3 uppercase font-bold">Abholzeit</p>
             <div className="border-b-2 border-black h-8 flex items-end">
               {safe(repair.pickup_time)}
             </div>

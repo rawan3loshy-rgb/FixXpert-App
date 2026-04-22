@@ -18,6 +18,12 @@ const sections = [
       { name: "Subscriptions", path: "/admin/subscriptions", icon: "💳" },
       { name: "Devices", path: "/admin/devices", icon: "📱" },
       { name: "Problems", path: "/admin/problems", icon: "⚠️" },
+      { name: "Employees", path: "/admin/employees", icon: "👨‍💻" },
+      { name: "Technicians", path: "/admin/technicians", icon: "👨‍🔧" },
+      { name: "Phone Quality", path: "/admin/phone-quality", icon: "☎️" },
+      { name: "Phone Types", path: "/admin/phone-types", icon: "☎️" },
+      { name: "Part Quality", path: "/admin/part-quality", icon: "🛠️" },
+      { name: "Part Types", path: "/admin/part-types", icon: "🛠️" },
     ]
   },
   {
