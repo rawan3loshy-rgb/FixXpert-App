@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   const [loading, setLoading] = useState(true)
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(()=>{
     checkAdmin()
@@ -53,16 +54,48 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
     <div className="flex min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white">
 
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      </div>
+
+      {/* Mobile Sidebar */}
+      {mobileOpen && (
+      <div className="fixed inset-0 z-50 flex">
+    
+        <div className="w-64 bg-slate-900">
+         <Sidebar collapsed={false} setCollapsed={()=>{}} />
+        </div>
+
+        {/* overlay */}
+       <div
+         className="flex-1 bg-black/50"
+         onClick={() => setMobileOpen(false)}
+          />
+        </div>
+       )}
 
       <div className="flex-1 flex flex-col">
 
         {/* TOP BAR */}
-        <div className="h-[70px] flex items-center justify-between px-6 border-b border-white/10 bg-slate-900/40">
+        <div className="h-[70px] flex items-center justify-between px-4 md:px-6 border-b border-white/10 bg-slate-900/40">
+
+          <div className="flex items-center gap-3">
+
+          {/* زر الموبايل */}
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="md:hidden text-xl"
+           >
+            ☰
+          </button>
 
           <h1 className="font-semibold text-lg">
-            Admin Control Center
-          </h1>
+           Admin Control Center
+           </h1>
+
+          </div>
+          
 
           <button
             onClick={async ()=>{
@@ -77,7 +110,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* CONTENT */}
-        <div className="p-8 overflow-auto max-w-[1400px] mx-auto w-full">
+        <div className="p-4 md:p-8 overflow-auto max-w-[1400px] mx-auto w-full">
           {children}
         </div>
 
