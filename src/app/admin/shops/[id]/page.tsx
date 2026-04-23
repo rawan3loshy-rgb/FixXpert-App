@@ -235,11 +235,11 @@ return <p>Shop not found</p>
 
 return(
 
-<div className="max-w-7xl mx-auto space-y-10">
+<div className="max-w-7xl mx-auto px-3 md:px-0 space-y-6 md:space-y-10">
 
 {/* HEADER */}
 <div>
-<h1 className="text-3xl font-bold">
+<h1 className="text-xl md:text-3xl font-bold">
 🏪 {shop.shop_name}
 </h1>
 <p className="text-slate-400 text-sm mt-1">
@@ -248,7 +248,7 @@ Shop analytics & performance overview
 </div>
 
 {/* 🔥 EDITABLE OVERVIEW */}
-<div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
 
 <Input label="Shop Name" value={shop.shop_name} onChange={(v:any)=>setShop({...shop,shop_name:v})}/>
 <Input label="Email" value={shop.email} onChange={(v:any)=>setShop({...shop,email:v})}/>
@@ -289,25 +289,25 @@ className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-white/10"
 </div>
 
 {/* ACTIONS */}
-<div className="flex gap-3">
+<div className="flex flex-col md:flex-row gap-3">
 
 <button
 onClick={save}
-className="px-6 py-2 bg-indigo-600 rounded-xl hover:bg-indigo-500"
+className="w-full md:w-auto px-6 py-2  bg-indigo-600 rounded-xl hover:bg-indigo-500"
 >
 {saving ? "Saving..." : "Save Changes"}
 </button>
 
 <button
 onClick={blockShop}
-className="px-6 py-2 bg-red-600 rounded-xl hover:bg-red-500"
+className="w-full md:w-auto px-6 py-2  bg-red-600 rounded-xl hover:bg-red-500"
 >
 Block Shop
 </button>
 
 <button
 onClick={resetPassword}
-className="px-6 py-2 bg-yellow-600 rounded-xl hover:bg-yellow-500"
+className="w-full md:w-auto px-6 py-2  bg-yellow-600 rounded-xl hover:bg-yellow-500"
 >
 Reset Password
 </button>
@@ -315,7 +315,7 @@ Reset Password
 </div>
 
 {/* OVERVIEW CARDS */}
-<div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
 
 <Card title="Total Repairs" value={repairs} highlight/>
 <Card title="Created" value={shop.created_at?.split("T")[0]}/>
@@ -325,25 +325,45 @@ Reset Password
 </div>
 
 {/* CHART */}
-<div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-xl">
+<div className="
+  bg-slate-900/60 
+  backdrop-blur-xl 
+  p-4 md:p-6 
+  rounded-2xl 
+  border border-white/10
+">
 
-<h2 className="text-lg font-semibold mb-4">
-📈 Repairs Growth
-</h2>
+  <h2 className="text-sm md:text-lg font-semibold mb-3 md:mb-4">
+    📈 Repairs Growth
+  </h2>
 
-<ResponsiveContainer width="100%" height={300}>
-<LineChart data={chartData}>
-<XAxis dataKey="date" stroke="#94a3b8"/>
-<YAxis stroke="#94a3b8"/>
-<Tooltip />
-<Line type="monotone" dataKey="repairs" stroke="#6366f1" strokeWidth={3} dot={false}/>
-</LineChart>
-</ResponsiveContainer>
+  {chartData.length === 0 ? (
+    <div className="text-center text-slate-400 py-10">
+      No data
+    </div>
+  ) : (
+    <div className="w-full overflow-hidden">
+      <ResponsiveContainer width="100%" height={280}>
+        <LineChart data={chartData}>
+          <XAxis dataKey="date" stroke="#94a3b8" />
+          <YAxis stroke="#94a3b8" />
+          <Tooltip />
+          <Line
+            type="monotone"
+            dataKey="repairs"
+            stroke="#6366f1"
+            strokeWidth={3}
+            dot={false}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  )}
 
 </div>
 
 {/* ANALYTICS */}
-<div className="grid md:grid-cols-2 gap-6">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 
 <div className="bg-slate-900/60 p-6 rounded-2xl border border-white/10">
 <h2 className="mb-4 font-semibold">📱 Devices</h2>
@@ -397,8 +417,8 @@ p-5 rounded-2xl border border-white/10 bg-slate-900/60
 ${highlight && "ring-2 ring-indigo-500"}
 `}
 >
-<p className="text-sm text-slate-400">{title}</p>
-<p className="text-xl font-bold mt-2">{value}</p>
+<p className="text-xs md:text-sm text-slate-400">{title}</p>
+<p className="text-lg md:text-xl font-bold mt-2">{value}</p>
 </motion.div>
 )
 }

@@ -42,7 +42,6 @@ export default function AdminShops(){
       .order("id",{ ascending:false })
 
     if(error){
-      console.log(error)
       alert(error.message)
       return
     }
@@ -63,7 +62,10 @@ export default function AdminShops(){
       return
     }
 
-    load()
+    // ⚡ optimistic UI
+    setShops(prev =>
+      prev.map(s => s.id === id ? { ...s, status } : s)
+    )
   }
 
   const filtered = shops.filter(s =>
@@ -74,43 +76,43 @@ export default function AdminShops(){
 
   return(
 
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 px-3 md:px-0">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center flex-wrap gap-4">
+      <div className="flex justify-between items-center flex-wrap gap-3">
 
         <div>
-          <h1 className="text-3xl font-bold">
-            🏪 Shops Control Center
+          <h1 className="text-xl md:text-3xl font-bold">
+            🏪 Shops
           </h1>
-          <p className="text-slate-400 text-sm">
-            Manage all shops & permissions
+          <p className="text-xs md:text-sm text-slate-400">
+            Manage shops & permissions
           </p>
         </div>
 
-        <div className="text-sm text-slate-400">
+        <div className="text-xs md:text-sm text-slate-400">
           {filtered.length} Shops
         </div>
 
       </div>
 
       {/* SEARCH */}
-      <div className="relative">
-        <input
-          placeholder="Search shop..."
-          value={search}
-          onChange={(e)=>setSearch(e.target.value)}
-          className="
-            w-full bg-slate-900/60 backdrop-blur-xl
-            border border-white/10
-            px-4 py-3 rounded-xl
-            focus:ring-2 focus:ring-indigo-500 outline-none
-          "
-        />
-      </div>
+      <input
+        placeholder="Search shop..."
+        value={search}
+        onChange={(e)=>setSearch(e.target.value)}
+        className="
+          w-full bg-slate-900/60
+          border border-white/10
+          px-4 py-2 md:py-3
+          rounded-xl
+          focus:ring-2 focus:ring-indigo-500
+          outline-none text-sm
+        "
+      />
 
-      {/* TABLE HEADER */}
-      <div className="grid grid-cols-3 px-4 text-xs text-slate-400">
+      {/* DESKTOP HEADER */}
+      <div className="hidden md:grid grid-cols-3 px-4 text-xs text-slate-400">
         <span>Shop</span>
         <span>Status</span>
         <span className="text-right">Actions</span>
@@ -127,21 +129,64 @@ export default function AdminShops(){
           </div>
         ) : (
 
-          filtered.map(shop=>{
+          filtered.map(shop=>(
+            <motion.div
+              key={shop.id}
+              whileHover={{ scale:1.01 }}
+              className="
+                bg-slate-900/60
+                border border-white/10
+                rounded-xl
+                p-4
+                hover:border-indigo-500
+                transition
+              "
+            >
 
-            return(
-              <motion.div
-                key={shop.id}
-                whileHover={{ scale: 1.02 }}
-                className="
-                  grid grid-cols-3 items-center
-                  bg-slate-900/60 backdrop-blur-xl
-                  border border-white/10
-                  p-4 rounded-xl
-                  hover:border-indigo-500
-                  transition
-                "
-              >
+              {/* 📱 MOBILE */}
+              <div className="md:hidden space-y-2">
+
+                <div
+                  onClick={()=>router.push(`/admin/shops/${shop.shop_id}`)}
+                  className="cursor-pointer"
+                >
+                  <p className="font-semibold">
+                    {shop.shop_name || "Unnamed"}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {shop.email}
+                  </p>
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+
+                  <StatusBadge status={shop.status} />
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={()=>router.push(`/admin/shops/${shop.shop_id}`)}
+                      className="px-3 py-1 text-xs bg-slate-800 rounded-lg"
+                    >
+                      View
+                    </button>
+
+                    <select
+                      value={shop.status}
+                      onChange={(e)=>updateStatus(shop.id,e.target.value)}
+                      className="bg-slate-800 px-2 py-1 rounded text-xs"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="active">Active</option>
+                      <option value="disabled">Disabled</option>
+                    </select>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* 💻 DESKTOP */}
+              <div className="hidden md:grid grid-cols-3 items-center">
 
                 {/* INFO */}
                 <div
@@ -149,7 +194,7 @@ export default function AdminShops(){
                   className="cursor-pointer"
                 >
                   <p className="font-semibold">
-                    {shop.shop_name || "Unnamed Shop"}
+                    {shop.shop_name}
                   </p>
                   <p className="text-xs text-slate-400">
                     {shop.email}
@@ -157,16 +202,14 @@ export default function AdminShops(){
                 </div>
 
                 {/* STATUS */}
-                <div>
-                  <StatusBadge status={shop.status} />
-                </div>
+                <StatusBadge status={shop.status} />
 
                 {/* ACTIONS */}
                 <div className="flex justify-end gap-2">
 
                   <button
                     onClick={()=>router.push(`/admin/shops/${shop.shop_id}`)}
-                    className="px-3 py-1 text-xs bg-slate-800 rounded-lg hover:bg-indigo-600"
+                    className="px-3 py-1 text-xs bg-slate-800 rounded-lg hover:bg-indigo-600 transition"
                   >
                     View
                   </button>
@@ -183,9 +226,10 @@ export default function AdminShops(){
 
                 </div>
 
-              </motion.div>
-            )
-          })
+              </div>
+
+            </motion.div>
+          ))
 
         )}
 
@@ -205,7 +249,7 @@ function StatusBadge({status}:{status:string}){
   }
 
   return(
-    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[status] || ""}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[status]}`}>
       {status}
     </span>
   )
