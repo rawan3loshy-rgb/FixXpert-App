@@ -13,15 +13,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  useEffect(()=>{
+  useEffect(() => {
     checkAdmin()
-  },[])
+  }, [])
 
-  async function checkAdmin(){
+  async function checkAdmin() {
+    const { data: { session } } = await supabase.auth.getSession()
 
-    const { data:{ session } } = await supabase.auth.getSession()
-
-    if(!session){
+    if (!session) {
       router.push("/login")
       return
     }
@@ -34,7 +33,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       .eq("owner", user.id)
       .single()
 
-    if(!shop?.is_admin){
+    if (!shop?.is_admin) {
       router.push("/dashboard")
       return
     }
@@ -42,7 +41,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     setLoading(false)
   }
 
-  if(loading){
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-slate-400">
         Loading admin...
@@ -51,67 +50,64 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-
     <div className="flex min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white">
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      </div>
+      {/* ✅ Sidebar (ذكي: Desktop + Mobile) */}
+      <Sidebar
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+      />
 
-      {/* Mobile Sidebar */}
-      {mobileOpen && (
-      <div className="fixed inset-0 z-50 flex">
-    
-        <div className="w-64 bg-slate-900">
-         <Sidebar collapsed={false} setCollapsed={()=>{}} />
-        </div>
-
-        {/* overlay */}
-       <div
-         className="flex-1 bg-black/50"
-         onClick={() => setMobileOpen(false)}
-          />
-        </div>
-       )}
-
+      {/* MAIN */}
       <div className="flex-1 flex flex-col">
 
-        {/* TOP BAR */}
-        <div className="h-[70px] flex items-center justify-between px-4 md:px-6 border-b border-white/10 bg-slate-900/40">
+        {/* 🔝 TOP BAR */}
+        <div className="h-[60px] md:h-[70px] flex items-center justify-between px-4 md:px-6 border-b border-white/10 bg-slate-900/60 backdrop-blur">
 
+          {/* LEFT */}
           <div className="flex items-center gap-3">
 
-          {/* زر الموبايل */}
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="md:hidden text-xl"
-           >
-            ☰
-          </button>
+            {/* 📱 زر الموبايل */}
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="md:hidden text-xl px-2 py-1 rounded hover:bg-white/10 transition"
+            >
+              ☰
+            </button>
 
-          <h1 className="font-semibold text-lg">
-           Admin Control Center
-           </h1>
+            <h1 className="font-semibold text-base md:text-lg tracking-wide">
+              Admin Control Center
+            </h1>
 
           </div>
-          
 
+          {/* RIGHT */}
           <button
-            onClick={async ()=>{
+            onClick={async () => {
               await supabase.auth.signOut()
               router.push("/login")
             }}
-            className="text-red-400"
+            className="text-red-400 hover:text-red-300 transition text-sm md:text-base"
           >
             Logout
           </button>
 
         </div>
 
-        {/* CONTENT */}
-        <div className="p-4 md:p-8 overflow-auto max-w-[1400px] mx-auto w-full">
-          {children}
+        {/* 📦 CONTENT */}
+        <div className="flex-1 overflow-auto">
+
+          <div className="
+            p-4 md:p-8
+            max-w-[1400px]
+            mx-auto
+            w-full
+          ">
+            {children}
+          </div>
+
         </div>
 
       </div>

@@ -25,7 +25,23 @@ export default function Page() {
           <Link
             key={shop.id}
             href={`/admin/employees/${shop.id}`}
-            className="border p-4 rounded hover:bg-gray-100"
+            className="
+           group
+           border border-white/10
+            bg-slate-900/40
+           p-4 rounded-xl
+           transition-all duration-300 ease-out
+
+           hover:bg-gradient-to-r   
+           hover:from-indigo-500/10 
+           hover:to-blue-500/10
+
+           hover:border-indigo-400
+           hover:shadow-xl hover:shadow-indigo-500/20
+           hover:scale-[1.01]
+
+            cursor-pointer
+           "
           >
             {shop.shop_name}
           </Link>
