@@ -21,6 +21,11 @@ export default function RepairsPage() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [loading, setLoading] = useState(true)
+  const [openParts, setOpenParts] = useState<Record<string, boolean>>({})
+  const [partsData, setPartsData] = useState<Record<string, any[]>>({})
+  const [showPartsModal, setShowPartsModal] = useState(false)
+  const [selectedParts, setSelectedParts] = useState<any[]>([])
+  const [selectedDevice, setSelectedDevice] = useState("")
  
   // 🔐 PIN SYSTEM
   const [shop, setShop] = useState<any>(null)
@@ -159,7 +164,33 @@ console.log("ERROR:", error)
   console.log("MATCHED STOCK:", filtered)
 
   setStockItems(filtered)
-}
+ }
+ const loadRepairParts = async (repair: any) => {
+
+  const { data, error } = await supabase
+    .from("repair_parts")
+    .select(`
+      id,
+      quantity,
+      cost_price,
+      stock_items (
+        type,
+        quality,
+        device
+      )
+    `)
+    .eq("repair_id", repair.id)
+
+  if (error) {
+    showToast("Error loading parts", "error")
+    return
+  }
+
+  setSelectedParts(data || [])
+  setSelectedDevice(repair.device)
+  setShowPartsModal(true)
+ } 
+
 
   // =========================
   // 🔥 ACTIONS
@@ -249,12 +280,14 @@ const confirmReady = async () => {
   }
 
 if (fixStatus === "fixed") {
-
+  let totalCost = 0
   for (const p of parts) {
 
     const item = stockItems.find(
       s => s.type === p.type && s.quality === p.quality
     )
+
+    
 
     if (!item) {
       showToast("Part not found", "error")
@@ -265,6 +298,8 @@ if (fixStatus === "fixed") {
       showToast("Not enough stock", "error")
       return
     }
+
+    totalCost += item.cost_price * p.quantity
 
     // insert
     await supabase.from("repair_parts").insert({
@@ -278,7 +313,7 @@ if (fixStatus === "fixed") {
     await supabase
     .from("repairs")
     .update({
-    cost_price: item.cost_price
+    cost_price: totalCost
     })
     .eq("id", selectedRepair.id)
 
@@ -348,23 +383,23 @@ if (fixStatus === "fixed") {
         {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
 
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-xl md:text-3xl font-bold">
             {t("viewRepairs")}
           </h1>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row gap-2 w-full">
 
             <input
               placeholder={t("searchRepair")}
               value={search}
               onChange={(e)=>setSearch(e.target.value)}
-              className="bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+              className="w-full md:w-auto flex-1 bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white"
             />
 
             <select
               value={statusFilter}
               onChange={(e)=>setStatusFilter(e.target.value)}
-              className="bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+              className="w-full md:w-auto bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white"
             >
               <option value="all">All</option>
               <option value="received">{tStatus("received")}</option>
@@ -397,7 +432,7 @@ if (fixStatus === "fixed") {
 
             {filtered.map((r)=>{
             const createdDate = r.created_at? new Date(r.created_at).toLocaleDateString(): ""
-              const profit = (Number(r.price || 0) - Number(r.cost || 0))
+              const profit = (Number(r.price || 0) - Number(r.cost_price || 0))
               const isLate =
                 (Date.now() - new Date(r.created_at).getTime()) / (1000*60*60*24) > 2 &&
                 r.status !== "delivered"
@@ -408,7 +443,7 @@ if (fixStatus === "fixed") {
                 <motion.div key={r.id} whileHover={{ scale: 1.02 }}
                   className="bg-slate-900/60 border border-white/10 rounded-xl p-5 hover:border-indigo-500 transition">
 
-                  <div className="flex justify-between items-start gap-4">
+                  <div className="flex flex-col md:flex-row justify-between items-start gap-4">
 
                     <div>
                       <p className="font-bold text-xl">{r.customer}</p>
@@ -432,6 +467,7 @@ if (fixStatus === "fixed") {
                         </p>
                       )}
                     </div>
+                    
 
                     <select
                       value={r.status}
@@ -445,9 +481,11 @@ if (fixStatus === "fixed") {
                       ))}
                     </select>
 
+                    
+
                   </div>
 
-                  <div className="mt-3 text-sm text-slate-400 flex flex-wrap gap-4">
+                  <div className="mt-3 text-sm text-slate-400 flex flex-col md:flex-row gap-2 md:gap-4">
                     <span>📞 {r.phone}</span>
                     <span>IMEI: {r.imei || "-"}</span>
 
@@ -485,7 +523,7 @@ if (fixStatus === "fixed") {
                         </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 mt-4">
+                  <div className="grid grid-cols-2 md:flex gap-2 mt-4">
 
                     <button
                       onClick={() => window.open(`/print/${r.id}`, "_blank")}
@@ -521,7 +559,41 @@ if (fixStatus === "fixed") {
                     >
                       Delete
                     </button>
+                     <button
+                     onClick={() => loadRepairParts(r)}
+                    className="px-3 py-2 bg-cyan-600 rounded-lg hover:bg-cyan-500 text-xs"
+                     >
+                     {t("ShowChangedParts")}
+                     </button>
+                     {/* 🔥 SHOW PARTS */}
+                     {openParts[r.id] && partsData[r.id] && (
+                     <div className="mt-4 bg-slate-800/50 p-3 rounded-lg border border-white/10">
 
+                        <p className="text-xs text-slate-400 mb-2">
+                         Changed Parts:
+                        </p>
+
+                        {partsData[r.id].map((p: any, i: number) => (
+                       <div
+                          key={i}
+                          className="flex justify-between text-xs border-b border-white/5 py-1"
+                          >
+                          <span>
+                           {p.stock_items?.type} - {p.stock_items?.quality}
+                          </span>
+
+                          <span className="text-red-400">
+                            {p.cost_price} €
+                          </span>
+
+                          <span>
+                            x{p.quantity}
+                          </span>
+                        </div>
+                      ))}
+
+                      </div>
+                      )}
                   </div>
 
                 </motion.div>
@@ -734,6 +806,115 @@ if (fixStatus === "fixed") {
        >
         {t("confirm")}
       </button>
+
+    </motion.div>
+
+  </div>,
+
+  document.body
+)}
+{showPartsModal && typeof window !== "undefined" && createPortal(
+
+  <div className="fixed inset-0 z-[999999] flex items-center justify-center">
+
+    {/* BACKDROP */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => setShowPartsModal(false)}
+      className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+    />
+
+    {/* MODAL */}
+    <motion.div
+      initial={{ opacity: 0, y: 80, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 50, scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 120, damping: 15 }}
+      className="relative w-[92%] max-w-lg rounded-3xl 
+      bg-gradient-to-br from-slate-900 to-slate-800 
+      border border-white/10 shadow-2xl p-6"
+    >
+
+      {/* HEADER */}
+      <div className="mb-5">
+        <h2 className="text-xl font-bold text-white">
+          {t("changedParts")}
+        </h2>
+        <p className="text-xs text-slate-400 mt-1">
+          {t("device")}: {selectedDevice}
+        </p>
+      </div>
+
+      {/* LIST */}
+      <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+
+        {selectedParts.length === 0 && (
+          <p className="text-sm text-slate-400 text-center">
+            {t("noParts")}
+          </p>
+        )}
+
+        {selectedParts.map((p, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="flex justify-between items-center 
+            bg-slate-800/70 border border-white/5 
+            rounded-xl p-3 hover:border-indigo-500 
+            transition"
+          >
+
+            {/* LEFT */}
+            <div>
+              <p className="text-white text-sm font-medium">
+                {p.stock_items?.type}
+              </p>
+              <p className="text-xs text-slate-400">
+                {p.stock_items?.quality}
+              </p>
+            </div>
+
+            {/* RIGHT */}
+            <div className="text-right">
+              <p className="text-red-400 font-semibold text-sm">
+                {p.cost_price} €
+              </p>
+              <p className="text-xs text-slate-300">
+                x{p.quantity}
+              </p>
+            </div>
+
+          </motion.div>
+        ))}
+
+      </div>
+
+      {/* TOTAL */}
+      <div className="mt-5 pt-4 border-t border-white/10 flex justify-between text-sm">
+
+        <span className="text-slate-400">{t("totalCost")}</span>
+
+        <span className="text-red-400 font-bold">
+          {selectedParts.reduce((sum, p) => sum + (p.cost_price * p.quantity), 0)} €
+        </span>
+
+      </div>
+
+      {/* BUTTON */}
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setShowPartsModal(false)}
+        className="mt-5 w-full h-11 rounded-xl font-semibold
+        bg-gradient-to-r from-indigo-600 to-indigo-500
+        hover:from-indigo-500 hover:to-indigo-400
+        transition shadow-lg"
+      >
+        {t("close")}
+      </motion.button>
 
     </motion.div>
 

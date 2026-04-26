@@ -1,5 +1,5 @@
 // 🔥 TYPES
-type Lang = "en" | "de"
+type Lang = "en" | "de" 
 
 // 🔥 GLOBAL LANG (SSR SAFE)
 let currentLang: Lang = "en"
@@ -159,7 +159,7 @@ statusProcessing: { en: "Processing...", de: "In Bearbeitung..." },
   quickActions: { en: "Quick Actions", de: "Schnellaktionen" },
   addNewRepair: { en: "Add Repair", de: "Neue Reparatur" },
   addNewRepairDesc: { en: "Register a new customer device", de: "Neues Kundengerät registrieren" },
-  viewRepairs: { en: "View All Repairs", de: "Alle Reparaturen" },
+  viewRepairs: { en: "View All Repairs", de: "Alle Reparaturen Anzeigen" },
   viewRepairsDesc: { en: "Manage current repair queue", de: "Reparaturliste verwalten" },
   trackDevice: { en: "Track a Device", de: "Gerät verfolgen" },
   trackDeviceDesc: { en: "Quickly look up by IMEI or Order", de: "Suche per IMEI oder Auftrag" },
@@ -171,6 +171,7 @@ statusProcessing: { en: "Processing...", de: "In Bearbeitung..." },
   device: { en: "Device", de: "Gerät" },
   status: { en: "Status", de: "Status" },
   date: { en: "Date", de: "Datum" },
+  
 
   
 
@@ -184,12 +185,8 @@ statusProcessing: { en: "Processing...", de: "In Bearbeitung..." },
   en: "Enter PIN",
   de: "PIN eingeben"
 },
-tooManyAttempts: {
-  en: "Too many attempts",
-  de: "Zu viele Versuche",
+tooManyAttempts: {en: "Too many attempts", de: "Zu viele Versuche" },
  
-},
-
 usedDevices: {
   en: "Used Devices",
   de: "Gebrauchte Geräte"
@@ -215,6 +212,10 @@ deviceStock: {
 editDevice: {
   en: "Edit Device",
   de: "Gerät bearbeiten"
+},
+ShowChangedParts: {
+  en: "Show Changed Parts",
+  de: "Geänderte Teile Anzeigen"
 },
 save: {
   en: "Save",
@@ -301,6 +302,28 @@ cancel: {
   de: "Abbrechen"
  
 },
+changedParts: {
+  en: "Changed Parts",
+  de: "Geänderte Teile"
+ 
+},
+noParts: {
+  en: "No parts found",
+  de: "Keine Teile gefunden"
+ 
+},
+totalCost: {
+  en: "Total Cost",
+  de: "Gesamtkosten"
+ 
+},
+close: {
+  en: "Close",
+  de: "Schließen"
+ 
+},
+
+
 
 
 
@@ -317,6 +340,8 @@ export const STATUS_LABELS: Record<string, Record<Lang, string>> = {
   "ready": { en: "Ready", de: "Bereit" },
   "delivered": { en: "Delivered", de: "Abgeholt" }
 }
+
+
 
 
 

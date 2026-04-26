@@ -16,7 +16,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { notifications } = useToast()
 
   const [open,setOpen] = useState(false)
-  const [lang,setLangState] = useState<"en"|"de">("en")
+  const [lang,setLangState] = useState<"en"|"de"|"ar"|"ru">("en")
   const [mounted,setMounted] = useState(false)
   const [checking, setChecking] = useState(true)
 
@@ -284,6 +284,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   >
                     DE
                   </button>
+                  
                 </div>
 
                 <UserMenu/>
