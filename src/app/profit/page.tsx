@@ -36,40 +36,77 @@ export default function ProfitPage(){
   // =========================
   // TRANSLATION
   // =========================
-  const t:any = {
-    en:{
-      profit:"Profit",
-      fixed:"Fixed",
-      notFixed:"Not Fixed",
-      total:"Total",
-      topDevice:"Top Device",
-      mostProblem:"Most Problem",
-      mostDevice:"Most Repaired Device",
-      logout:"Logout",
-      pdf:"PDF",
-      today:"Today",
-      week:"Week",
-      month:"Month",
-      ai:"AI Insight",
-      prediction:"Prediction next month"
-    },
-    de:{
-      profit:"Gewinn",
-      fixed:"Repariert",
-      notFixed:"Nicht repariert",
-      total:"Gesamt",
-      topDevice:"Bestes Gerät",
-      mostProblem:"Häufigstes Problem",
-      mostDevice:"Meist repariert",
-      logout:"Abmelden",
-      pdf:"PDF Export",
-      today:"Heute",
-      week:"Woche",
-      month:"Monat",
-      ai:"KI Analyse",
-      prediction:"Vorhersage nächster Monat"
-    }
+const t:any = {
+
+  en:{
+    profit:"Profit",
+    fixed:"Fixed",
+    notFixed:"Not Fixed",
+    total:"Total",
+    topDevice:"Top Device",
+    mostProblem:"Most Problem",
+    mostDevice:"Most Repaired Device",
+    logout:"Logout",
+    pdf:"PDF",
+    today:"Today",
+    week:"Week",
+    month:"Month",
+    ai:"AI Insight",
+    prediction:"Prediction next month"
+  },
+
+  de:{
+    profit:"Gewinn",
+    fixed:"Repariert",
+    notFixed:"Nicht repariert",
+    total:"Gesamt",
+    topDevice:"Bestes Gerät",
+    mostProblem:"Häufigstes Problem",
+    mostDevice:"Meist repariert",
+    logout:"Abmelden",
+    pdf:"PDF Export",
+    today:"Heute",
+    week:"Woche",
+    month:"Monat",
+    ai:"KI Analyse",
+    prediction:"Vorhersage nächster Monat"
+  },
+
+  ar:{
+    profit:"الربح",
+    fixed:"تم الإصلاح",
+    notFixed:"لم يتم الإصلاح",
+    total:"المجموع",
+    topDevice:"أفضل جهاز",
+    mostProblem:"أكثر مشكلة",
+    mostDevice:"الأكثر إصلاحاً",
+    logout:"تسجيل خروج",
+    pdf:"تصدير PDF",
+    today:"اليوم",
+    week:"الأسبوع",
+    month:"الشهر",
+    ai:"تحليل ذكي",
+    prediction:"توقع الشهر القادم"
+  },
+
+  ru:{
+    profit:"Прибыль",
+    fixed:"Исправлено",
+    notFixed:"Не исправлено",
+    total:"Итого",
+    topDevice:"Лучшее устройство",
+    mostProblem:"Частая проблема",
+    mostDevice:"Чаще ремонтируют",
+    logout:"Выйти",
+    pdf:"PDF отчет",
+    today:"Сегодня",
+    week:"Неделя",
+    month:"Месяц",
+    ai:"ИИ анализ",
+    prediction:"Прогноз на следующий месяц"
   }
+
+}
 
   // =========================
   // LOAD + REALTIME (FIXED)
@@ -119,14 +156,15 @@ useEffect(()=>{
     setShop(shopData)
 
     const { data } = await supabase
-      .from("repairs")
-      .select("*")
-      .eq("shop_id", shopData.id)
-      .order("created_at",{ascending:false})
+  .from("repairs")
+  .select("*")
+  .eq("shop_id", shopData.id)
+  .order("created_at",{ascending:false})
 
     setRepairs(data || [])
     setLoading(false)
   }
+  
 
   // =========================
   // FILTER
@@ -170,10 +208,11 @@ useEffect(()=>{
   for(const r of filtered){
 
     const price = Number(r.price) || 0
+    const cost = Number(r.cost_price) || 0
 
     if((r.fix_status||"").toLowerCase()==="fixed"){
-      profit += price
-      fixed++
+    profit += (price - cost)
+    fixed++
       deviceMap[r.device] = (deviceMap[r.device]||0)+1
     } else {
       notFixed++
@@ -213,7 +252,9 @@ useEffect(()=>{
 
     return{
       month: new Date(0,i).toLocaleString(lang,{month:"short"}),
-      profit: monthRepairs.reduce((s,r)=> s+(Number(r.price)||0),0)
+      profit: monthRepairs.reduce((s,r)=> 
+       s + ((Number(r.price)||0) - (Number(r.cost_price)||0))
+      ,0)
     }
   })
 
@@ -434,12 +475,16 @@ useEffect(()=>{
 
         <div className="flex gap-2">
 
-       <button
-       onClick={()=>setLang(lang==="en"?"de":"en")}
-       className="btn-ghost"
-       >
-       {lang==="en"?"DE":"EN"}
-       </button>
+       <select
+         value={lang}
+         onChange={(e)=>setLang(e.target.value)}
+         className="btn-ghost"
+         >
+         <option value="en">EN</option>
+         <option value="de">DE</option>
+         <option value="ar">AR</option>
+         <option value="ru">RU</option>
+        </select>
 
        <button
            onClick={exportPDF}
@@ -507,11 +552,7 @@ useEffect(()=>{
            `}</style>
           </div>
           {/* FILTER */}
-          <motion.div
-          whileHover={{scale:1.02}}
-          whileTap={{scale:0.97}}
-          >
-          <div className="flex gap-3 flex-wrap">
+          
 
           {["today","week","month"].map(f=>(
           <motion.button
@@ -563,8 +604,7 @@ useEffect(()=>{
            )}
            
  
-          </div>
-          </motion.div>
+          
           {/* STATS */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Card title={t[lang].profit} value={`${profit}€`} />
@@ -652,6 +692,8 @@ useEffect(()=>{
                   <th className="p-3 text-left">Problem</th>
                   <th className="p-3 text-left">Status</th>
                   <th className="p-3 text-left">Price</th>
+                  <th className="p-3 text-left">Cost</th>
+                  <th className="p-3 text-left">Profit</th>
                 </tr>
               </thead>
 
@@ -670,12 +712,30 @@ useEffect(()=>{
                  }
                </td>
 
-                <td className="p-3 text-green-400 font-semibold">
-               {(r.fix_status || "").toLowerCase() === "fixed"
-               ? `${Number(r.price) || 0}€`
-               : "-"
+                {/* PRICE */}
+               <td className="p-3 text-yellow-400 font-semibold">
+                 {(r.fix_status || "").toLowerCase() === "fixed"
+                 ? `${Number(r.price) || 0}€`
+                 : "-"
+                 }
+                </td>
+
+                {/* COST */}
+                <td className="p-3 text-red-400 font-semibold">
+                  {(r.fix_status || "").toLowerCase() === "fixed"
+                 ? `${Number(r.cost_price) || 0}€`
+                  : "-"
+                 }
+                </td>
+
+               {/* PROFIT */}
+               <td className="p-3 text-green-500 font-bold">
+                {(r.fix_status || "").toLowerCase() === "fixed"
+                ? `${(Number(r.price) || 0) - (Number(r.cost_price) || 0)}€`
+                : "-"
                }
-               </td>
+              </td>
+               
 
               </tr> 
                 ))}

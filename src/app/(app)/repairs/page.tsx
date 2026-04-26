@@ -146,11 +146,17 @@ console.log("RAW STOCK:", data)
 console.log("ERROR:", error)
 
   // 🔥 فلترة بالفرونت (أذكى من ilike)
+  // 🔥 normalize function
+  const normalize = (str:any) =>
+    str?.toLowerCase().replace(/\s+/g, " ").trim()
+
+  const repairDevice = normalize(selectedRepair.device)
+
   const filtered = (data || []).filter(item =>
-    item.device?.toLowerCase().includes(
-      selectedRepair.device?.toLowerCase()
-    )
+    normalize(item.device) === repairDevice
   )
+
+  console.log("MATCHED STOCK:", filtered)
 
   setStockItems(filtered)
 }
@@ -268,6 +274,13 @@ if (fixStatus === "fixed") {
       quantity: p.quantity,
       cost_price: item.cost_price
     })
+    
+    await supabase
+    .from("repairs")
+    .update({
+    cost_price: item.cost_price
+    })
+    .eq("id", selectedRepair.id)
 
     // update stock
     await supabase
