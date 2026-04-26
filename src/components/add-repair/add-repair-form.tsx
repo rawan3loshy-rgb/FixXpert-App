@@ -26,13 +26,17 @@ export default function AddRepairForm(){
   const [status,setStatus] = useState("received")
   const [technician,setTechnician] = useState("")
   const [returned,setReturned] = useState(false)
-  const [pickupTime,setPickupTime] = useState("")
+  const [pickupDate, setPickupDate] = useState(
+  new Date().toISOString().split("T")[0])
+  const [pickupTime, setPickupTime] = useState(
+  new Date().toTimeString().slice(0,5))
+  const [baseDateTime, setBaseDateTime] = useState<Date | null>(null)
   const [saving,setSaving] = useState(false)
   const [description,setDescription] = useState("")
   const [price, setPrice] = useState("")
-
   const [employees,setEmployees] = useState<any[]>([])
   const [technicians,setTechnicians] = useState<any[]>([])
+  const [activeSuggest, setActiveSuggest] = useState<number | null>(null)
 
   const [receivedBy,setReceivedBy] = useState("")
   const today = new Date().toLocaleDateString()
@@ -167,7 +171,7 @@ export default function AddRepairForm(){
         status,
         technician,
         returned,
-        pickupTime,
+        pickup_at: `${pickupDate} ${pickupTime}`,
         description,
         price: Number(price || 0),
         received_by: receivedBy,
@@ -204,6 +208,7 @@ export default function AddRepairForm(){
       setDescription("")
       setReceivedBy("")
       setPrice("")
+      
 
     } catch (err: any) {
       console.error(err)
@@ -212,7 +217,25 @@ export default function AddRepairForm(){
       setSaving(false)
     }
   }
+const applySuggestion = (hours: number) => {
 
+  setActiveSuggest(hours)
+
+  const base = baseDateTime || new Date()
+  const newDate = new Date(base)
+
+  newDate.setHours(base.getHours() + hours)
+
+  const yyyy = newDate.getFullYear()
+  const mm = String(newDate.getMonth() + 1).padStart(2, "0")
+  const dd = String(newDate.getDate()).padStart(2, "0")
+
+  const hh = String(newDate.getHours()).padStart(2, "0")
+  const min = String(newDate.getMinutes()).padStart(2, "0")
+
+  setPickupDate(`${yyyy}-${mm}-${dd}`)
+  setPickupTime(`${hh}:${min}`)
+}
   return(
       
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 text-white p-6">
@@ -344,14 +367,63 @@ export default function AddRepairForm(){
           </Card>
 
           {/* PICKUP */}
-          <Card className="p-5 border border-white/10">
-            <input
-              type="time"
-              value={pickupTime}
-              onChange={(e)=>setPickupTime(e.target.value)}
-              className="w-full h-12 px-4 rounded-xl bg-slate-800 border border-white/10"
-            />
-          </Card>
+      
+          <Card>
+           <p className="text-xs text-slate-400 mb-2">{t("pickupTime")}</p>
+
+           {/* DATE + TIME */}
+           <div className="grid grid-cols-2 gap-2 mb-2">
+
+             <input
+               type="date"
+                value={pickupDate}
+                onChange={(e)=>setPickupDate(e.target.value)}
+                className="h-12 px-3 rounded-xl bg-slate-800 border border-white/10"
+              />
+
+              <input
+               type="time"
+               value={pickupTime}
+               onChange={(e)=>setPickupTime(e.target.value)}
+               className="h-12 px-3 rounded-xl bg-slate-800 border border-white/10"
+              />
+
+            </div>
+
+           {/* 🔥 SUGGEST BUTTONS */}
+           <div className="flex gap-3 mt-3">
+
+             {[1,2,3,24].map((h)=>{
+
+             const isActive = activeSuggest === h
+
+              return (
+              <button
+               key={h}
+               type="button"
+               onClick={()=>applySuggestion(h)}
+               className={`
+               flex-1 h-12 rounded-xl font-semibold
+               transition-all duration-300
+
+               ${isActive 
+               ? "shadow-[0_0_25px_rgba(59,130,246,0.9)] text-white shadow-[0_0_20px_rgba(99,102,241,0.8)] scale-105"
+               : "bg-slate-800 text-white/80 hover:bg-indigo-600 hover:text-white hover:shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+               }
+               `}
+               >
+               {
+                h === 1 ? t("suggest1h") :
+                h === 2 ? t("suggest2h") :
+                h === 3 ? t("suggest3h") :
+                t("suggest1d")
+               }
+              </button>
+             )
+              })}
+
+            </div>
+           </Card>
 
           {/* BUTTON */}
           <Button

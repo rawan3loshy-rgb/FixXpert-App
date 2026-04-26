@@ -26,7 +26,7 @@ export const repairSchema = z.object({
 
   returned: z.boolean(),
 
-  pickupTime: z.string().optional()
+  pickup_at: z.string().optional()
 })
 
 export type RepairForm = z.infer<typeof repairSchema>

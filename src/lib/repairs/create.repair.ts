@@ -10,7 +10,7 @@ export const createRepair = async (form: {
   status: string
   technician?: string
   returned?: boolean
-  pickupTime?: string
+  pickup_at?: string
   description?: string // 🔥 NEW
   received_by?: string // 🔥 NEW
 }) => {
@@ -50,7 +50,7 @@ export const createRepair = async (form: {
       status: form.status,
       technician: form.technician || null,
       returned: form.returned || false,
-      pickup_time: form.pickupTime || null,
+      pickup_at: form.pickup_at || null,
 
       // 🔥 FIX (المهم)
       description: form.description || null,

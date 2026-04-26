@@ -89,10 +89,10 @@ export default function PrintPage() {
       <div
         style={{
           width: "210mm",
-          minHeight: "260mm",
+          minHeight: "245mm",
           background: "white"
         }}
-        className="text-black p-10 print:p-6"
+        className="text-black p-8 print:p-4"
       >
 
         {/* HEADER */}
@@ -108,9 +108,12 @@ export default function PrintPage() {
               {t("orderNumber", "de")}: {repair.order_number}
             </p>
 
-            <p className="text-xs mt-1">
-              {new Date().toLocaleString("de-DE")}
-            </p>
+           <p className="text-xs mt-1">
+  {repair.created_at &&
+    new Date(repair.created_at).toLocaleDateString("de-DE")}{" "}
+  {repair.created_at &&
+    new Date(repair.created_at).toLocaleTimeString("de-DE")}
+</p>
           </div>
 
           {/* RIGHT */}
@@ -203,15 +206,54 @@ export default function PrintPage() {
 
           <div className="border-2 border-black rounded-xl p-5 col-span-2">
             <p className="text-xs mb-3 uppercase font-bold">Abholzeit</p>
+
             <div className="border-b-2 border-black h-8 flex items-end">
-              {safe(repair.pickup_time)}
+             {repair.pickup_at
+              ? (() => {
+              const clean = repair.pickup_at.replace("T", " ").replace("Z", "")
+              const [date, time] = clean.split(" ")
+
+              if (!date || !time) return "Nicht angegeben"
+
+              const [y, m, d] = date.split("-")
+              const [h, min] = time.split(":")
+
+              return `${d}.${m}.${y}, ${h}:${min}`
+              })()
+              : "Nicht angegeben"}
             </div>
           </div>
 
         </div>
+        {/* TERMS */}
+        <div className="mt-6 text-[10px] leading-4 border-t border-black pt-3">
+          <p className="font-semibold mb-1">
+            Einverständniserklärung & Garantiebedingungen
+          </p>
+
+          <p>
+           • Das Gerät muss innerhalb von 2 Monaten nach Fertigstellung abgeholt und bezahlt werden.
+           Erfolgt dies nicht, behalten wir uns das Recht vor, das Gerät zu verkaufen,
+           um Reparaturkosten und Arbeitsaufwand zu decken.
+          </p>
+
+          <p>
+           • Für Datenverlust wird keine Haftung übernommen. Der Kunde ist selbst
+            verantwortlich für die Sicherung seiner Daten.
+         </p>
+
+          <p>
+           • Keine Haftung für SIM-Karten, Speicherkarten oder Zubehör, die nicht
+            ausdrücklich dokumentiert wurden.
+          </p>
+
+          <p>
+           • Garantie gilt nur für die durchgeführte Reparatur, nicht für das gesamte Gerät.
+          </p>
+        </div>
 
         {/* FOOTER */}
-        <div className="mt-16 border-t-2 border-black pt-8 flex justify-between items-end">
+        <div style={{ pageBreakInside: "avoid" }} className="mt-6 border-t border-black pt-6 flex justify-between items-end">
 
           <div>
             <p className="text-sm">Unterschrift Kunde</p>
@@ -219,7 +261,7 @@ export default function PrintPage() {
           </div>
 
           <div className="text-center">
-            <QRCode value={trackUrl} size={90} />
+            <QRCode value={trackUrl} size={70} />
             <p className="text-xs mt-2">Reparatur verfolgen</p>
           </div>
 

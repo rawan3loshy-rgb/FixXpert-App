@@ -145,10 +145,10 @@ const loadStock = async () => {
   .select("*")
   .eq("shop_id", shop.id)
 
-console.log("SHOP ID:", shop?.id)
-console.log("SELECTED DEVICE:", selectedRepair?.device)
-console.log("RAW STOCK:", data)
-console.log("ERROR:", error)
+ console.log("SHOP ID:", shop?.id)
+ console.log("SELECTED DEVICE:", selectedRepair?.device)
+ console.log("RAW STOCK:", data)
+ console.log("ERROR:", error)
 
   // 🔥 فلترة بالفرونت (أذكى من ilike)
   // 🔥 normalize function
@@ -460,6 +460,40 @@ if (fixStatus === "fixed") {
                        📅 {createdDate}
                        </p>
                        )}
+                       {(r.received_by || r.created_at || r.pickup_at) && (
+                        <p className="text-xs text-slate-400 mt-1 flex flex-wrap gap-2 items-center">
+
+                          {/* 👤 الموظف */}
+                          {r.received_by && (
+                          <span className="text-green-400">👤 {r.received_by}</span>
+                          )}
+
+                          {/* 🕒 وقت الاستلام الفعلي */}
+                         {r.created_at && (
+                          <span className="text-yellow-400">
+                          🕒 {new Date(r.created_at).toLocaleTimeString()}
+                          </span>
+                         )}
+
+                         {/* ⏱ وقت الاستلام المتوقع */}
+                         {r.pickup_at && (
+                          <span className="text-red-400">
+                           ⏰ {(() => {
+                            const clean = r.pickup_at.replace("T", " ").replace("+00:00", "")
+                            const [date, time] = clean.split(" ")
+
+                            if (!date || !time) return "-"
+
+                            const [y, m, d] = date.split("-")
+                            const [h, min] = time.split(":")
+
+                           return `${d}-${m}-${y} ${h}:${min}`
+                           })()}
+                          </span>
+                          )}
+
+                        </p>
+                        )}
 
                       {isLate && (
                         <p className="text-red-400 text-xs mt-1">
@@ -669,7 +703,7 @@ if (fixStatus === "fixed") {
           }}
           className="flex-1 bg-slate-800 border border-white/10 rounded px-2 py-1 text-xs"
         >
-          <option value="">Type</option>
+          <option value="">{t("type")}</option>
           {[...new Set(stockItems.map(s=>s.type))].map(t => (
             <option key={t}>{t}</option>
           ))}
@@ -685,7 +719,7 @@ if (fixStatus === "fixed") {
           }}
           className="flex-1 bg-slate-800 border border-white/10 rounded px-2 py-1 text-xs"
         >
-          <option value="">Quality</option>
+          <option value="">{t("quality")}</option>
           {[...new Set(stockItems.map(s=>s.quality))].map(q => (
             <option key={q}>{q}</option>
           ))}
@@ -712,7 +746,7 @@ if (fixStatus === "fixed") {
       onClick={() => setParts([...parts, { type:"", quality:"", quantity:1 }])}
       className="text-xs text-indigo-400"
     >
-      + Add Part
+     + {t("addmorePart")}
     </button>
 
   </div>

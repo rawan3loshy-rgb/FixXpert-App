@@ -186,10 +186,28 @@ statusProcessing: { en: "Processing...", de: "In Bearbeitung..." },
   de: "PIN eingeben"
 },
 tooManyAttempts: {en: "Too many attempts", de: "Zu viele Versuche" },
- 
+selectRepairOutcome: { en: "Select Repair Outcome", de: "Reparaturergebnis auswählen" },
+addmorePart: { en: "Add More Part", de: "Mehr Teile hinzufügen" },
+
 usedDevices: {
   en: "Used Devices",
   de: "Gebrauchte Geräte"
+},
+suggest1h: {
+  en: "+1 hour",
+  de: "+1 Stunde"
+},
+suggest2h: {
+  en: "+2 hours",
+  de: "+2 Stunden"
+},
+suggest3h: {
+  en: "+3 hours",
+  de: "+3 Stunden"
+},
+suggest1d: {
+  en: "+1 day",
+  de: "+1 Tag"
 },
 usedDeviceAdded: {
   en: "Device added",
@@ -236,6 +254,17 @@ model: {
   en: "Model",
   de: "Modell"
 },
+
+quality: {
+  en: "Quality",
+  de: "Qualität"
+},
+
+type: {
+  en: "Type",
+  de: "Typ"
+},
+
 
 
 

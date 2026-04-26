@@ -188,12 +188,22 @@ export default function EditRepair(){
          </span>
          </h1>
 
-         {/* 📅 DATE */}
          {createdDate && (
-         <p className="text-sm text-slate-400 mt-2">
-          📅 {createdDate}
-          </p>
-         )}
+           <div className="text-sm text-slate-400 mt-2 flex flex-wrap gap-4">
+
+              {/* 📅 التاريخ */}
+              <span>📅 {createdDate}</span>
+
+               {/* 🕒 وقت الاستلام */}
+                {originalRepair?.created_at && (
+                <span className="text-green-400">
+                  🕒 {new Date(originalRepair.created_at).toLocaleTimeString()}
+                </span>
+              )}
+
+            </div>
+            )}
+         
 
         </div>
           
@@ -252,6 +262,34 @@ export default function EditRepair(){
               setDescription={setDescription}
               allowedStatuses={allowedStatuses}
             />
+          </Card>
+          {/* 🔥 TECHNICIAN & RECEIVED */}
+         <Card>
+            <div className="grid md:grid-cols-2 gap-4">
+
+              {/* 👨‍🔧 Technician */}
+             <div>
+               <p className="text-xs text-slate-400 mb-1">
+               {t("technicianLabel")}
+                </p>
+
+                <div className="h-12 flex items-center px-4 rounded-xl bg-slate-800 border border-white/10 text-white">
+                  {originalRepair?.technician || "-"}
+               </div>
+              </div>
+
+              {/* 👤 Received By */}
+              <div>
+               <p className="text-xs text-slate-400 mb-1">
+                 {t("receiverLabel")}
+               </p>
+
+                <div className="h-12 flex items-center px-4 rounded-xl bg-slate-800 border border-white/10 text-white">
+                  {originalRepair?.received_by || "-"}
+               </div>
+             </div>
+
+            </div>
           </Card>
 
           {/* PICKUP */}
