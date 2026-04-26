@@ -15,6 +15,7 @@ type StockItem = {
   quality: string
   quantity: number
   shop_id: string
+  cost_price: number | null
 }
 
 type Device = {
@@ -46,7 +47,7 @@ export default function StockPage() {
   const [selectedDevice, setSelectedDevice] = useState("")
   const [highlight, setHighlight] = useState(0)
   const [open, setOpen] = useState(false)
-
+  const [costPrice, setCostPrice] = useState<number | "">("")
   const [type, setType] = useState("")
   const [quality, setQuality] = useState("")
   const [qty, setQty] = useState(1)
@@ -57,13 +58,13 @@ export default function StockPage() {
   const [fQuality, setFQuality] = useState("")
   const [fQty, setFQty] = useState("")
 
-  const [userId, setUserId] = useState<string | null>(null)
+  
   const [lang, setLang] = useState("en")
 
   const wrapperRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<(HTMLDivElement | null)[]>([])
   const [draftItems, setDraftItems] = useState<StockItem[]>([])
-  const firstLoad = useRef(true)
+  const [shop, setShop] = useState<any>(null)
 
   // ✅ Pin Modal
   const [unlocked, setUnlocked] = useState(false)
@@ -74,20 +75,31 @@ export default function StockPage() {
   // 🌍 LANG
   useEffect(() => setLang(getLang()), [])
 
-  // 🔑 USER
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setUserId(data.user.id)
-    })
-  }, [])
+  // 🔑 SHOP
+useEffect(() => {
+  const loadShop = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data: shopData } = await supabase
+      .from("shops")
+      .select("*")
+      .eq("shop_id", user.id)
+      .single()
+
+    setShop(shopData)
+  }
+
+  loadShop()
+}, [])
 
   // 📥 LOAD
   useEffect(() => {
-    if (!userId) return
+    if (!shop) return
 
     const load = async () => {
       const [s, d, t, q] = await Promise.all([
-        supabase.from("stock_items").select("*").eq("shop_id", userId),
+        supabase.from("stock_items").select("*").eq("shop_id", shop.id),
         supabase.from("devices").select("*"),
         supabase.from("part_types").select("*"),
         supabase.from("part_quality").select("*")
@@ -101,7 +113,7 @@ export default function StockPage() {
      const { data: settings } = await supabase
       .from("shops")
       .select("profit_pin")
-      .eq("shop_id", userId)   // ✅ هذا أهم سطر
+      .eq("id", shop.id)   // ✅ هذا أهم سطر
       .maybeSingle()
 
       if (settings?.profit_pin) setAdminPin(settings.profit_pin)  
@@ -110,7 +122,7 @@ export default function StockPage() {
     }
     
     load()
-  }, [userId])
+  }, [shop])
   
 
   // 🔍 SEARCH
@@ -186,7 +198,8 @@ export default function StockPage() {
     type,
     quality,
     quantity: qty,
-    shop_id: userId || ""
+    shop_id: shop.id,
+    cost_price: costPrice === "" ? null : costPrice
   }
 
   setDraftItems(prev => [...prev, newItem])
@@ -196,6 +209,7 @@ export default function StockPage() {
   setSelectedDevice("")
   setType("")
   setQuality("")
+  setCostPrice("")
   setQty(1)
   }
 
@@ -293,7 +307,7 @@ export default function StockPage() {
      
         <Card>
         
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
 
             {/* SEARCH */}
             <div ref={wrapperRef} className="relative md:col-span-2">
@@ -366,6 +380,17 @@ export default function StockPage() {
                 </option>
               ))}
             </select>
+            <input
+             type="number"
+             step="0.01"
+             value={costPrice}
+               onChange={(e)=>{
+               const val = e.target.value
+               setCostPrice(val === "" ? "" : Number(val))
+              }}
+             placeholder={lang==="de" ? "Kostenpreis" : "Cost price"}
+             className="bg-white/5 rounded-lg px-2"
+            />
 
             <input
               type="number"
@@ -373,6 +398,7 @@ export default function StockPage() {
               onChange={(e)=>setQty(Number(e.target.value))}
               className="bg-white/5 rounded-lg px-2"
             />
+            
 
           </div>
 
@@ -402,7 +428,7 @@ export default function StockPage() {
              grid 
              grid-cols-1 
              sm:grid-cols-2 
-             md:grid-cols-[2fr_1fr_1fr_1fr_0.7fr_0.3fr] 
+             md:grid-cols-[2fr_1fr_1fr_1fr_1fr_0.3fr] 
              gap-2 
              bg-white/5 
              p-3 
@@ -452,6 +478,20 @@ export default function StockPage() {
          ))}
          </select>
 
+           {/* COST PRICE */}
+         <input
+         type="number"
+         step="0.01"
+         value={item.cost_price ? `${item.cost_price} €` : "—"}
+         onChange={(e)=>{
+         const value = Number(e.target.value)
+         setDraftItems(prev =>
+         prev.map((d,i)=> i===index ? {...d, cost_price:value} : d)
+         )
+         }}
+         className="bg-white/5 px-2 py-1 rounded text-center"
+         />
+
 
          {/* QTY */}
          <input
@@ -465,10 +505,6 @@ export default function StockPage() {
          }}
          className="bg-white/5 px-2 py-1 rounded text-center"
          />
-
-
-
-         
 
           {/* ❌ DELETE */}
           <button
@@ -494,7 +530,7 @@ export default function StockPage() {
             return
            }
 
-            if (!userId) return
+            if (!shop) return
 
            for (const item of draftItems) {
 
@@ -505,7 +541,7 @@ export default function StockPage() {
             device: item.device,
             type: item.type,
             quality: item.quality,
-            shop_id: userId
+            shop_id: shop.id
            })
            .maybeSingle()
 
@@ -513,17 +549,23 @@ export default function StockPage() {
 
            const newQty = existing.quantity + item.quantity
 
-           await supabase
-            .from("stock_items")
-            .update({ quantity: newQty })
-            .eq("id", existing.id)
+           const { data: updated } = await supabase
+           .from("stock_items")
+           .update({ 
+            quantity: newQty,
+            cost_price: item.cost_price
+            })
+           .eq("id", existing.id)
+           .select()
+           .single()
 
-           // تحديث UI
+           if (updated) { 
            setItems(prev =>
-            prev.map(i =>
-              i.id === existing.id ? { ...i, quantity: newQty } : i
-            )
+           prev.map(i =>
+           i.id === updated.id ? updated : i
            )
+           )
+           }
 
            } else {
 
@@ -534,13 +576,20 @@ export default function StockPage() {
               type: item.type,
               quality: item.quality,
               quantity: item.quantity,
-              shop_id: userId
+              shop_id: shop.id,
+              cost_price: item.cost_price ?? null
             })
             .select()
             .single()
 
            if (data) {
-            setItems(prev => [data, ...prev])
+           setItems(prev => [
+           {
+           ...data,
+           cost_price: item.cost_price // 🔥 نضمن القيمة
+           },
+           ...prev
+           ])
            }
            }
            }
@@ -603,7 +652,7 @@ export default function StockPage() {
        
         {/* ================= LIST ================= */}
         <Card>
-          <div className="hidden md:grid grid-cols-10 gap-2 px-2 text-xs text-slate-400 mb-2 border-b border-white/10 pb-2">
+          <div className="hidden md:grid grid-cols-12 gap-2 px-2 text-xs text-slate-400 mb-2 border-b border-white/10 pb-2">
 
             <div className="md:col-span-4">
              {lang === "de" ? "Gerät" : "Device"}
@@ -615,6 +664,9 @@ export default function StockPage() {
 
             <div className="md:col-span-2">
              {lang === "de" ? "Qualität" : "Quality"}
+            </div>
+            <div className="md:col-span-2">
+            {lang === "de" ? "Kostenpreis" : "Cost"}
             </div>
  
             <div className="md:col-span-2 text-right">
@@ -628,7 +680,7 @@ export default function StockPage() {
             {filteredItems.map(item=>(
               <div key={item.id} className="p-4 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center gap-4">
 
-                <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_0.1fr] gap-3 md:gap-2 w-full items-center">
+                <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_0.1fr] gap-3 md:gap-2 w-full items-center">
 
                {/* DEVICE */}
                <div className="bg-white/5 px-3 py-2 rounded-lg text-sm font-semibold">
@@ -653,6 +705,46 @@ export default function StockPage() {
                 </p>
                {getQualityLabel(item.quality)}
                </div>
+               {/* COST PRICE */}
+               <div className="bg-white/5 px-3 py-2 rounded-lg text-sm text-slate-300">
+
+                 <p className="text-xs text-slate-400 md:hidden">
+                    {lang === "de" ? "Kostenpreis" : "Cost"}
+                  </p>
+
+                  {unlocked ? (
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={item.cost_price ?? ""}
+                    placeholder={lang === "de" ? "Preis eingeben" : "Enter cost"}
+
+                    onChange={(e) => {
+                    const value = e.target.value === "" ? null : Number(e.target.value)
+
+                   setItems(prev =>
+                   prev.map(i =>
+                   i.id === item.id ? { ...i, cost_price: value } : i
+                   )
+                   )
+                   }}
+
+                   onBlur={async (e) => {
+                   const value = e.target.value === "" ? null : Number(e.target.value)
+
+                   await supabase
+                   .from("stock_items")
+                   .update({ cost_price: value })
+                   .eq("id", item.id)
+                   }}
+
+                   className="w-full bg-transparent outline-none"
+                  />
+                 ) : (
+                 <span>•••</span>
+                 )}
+
+                </div>
 
                </div>
 

@@ -12,7 +12,7 @@ export default function OrderPartsPage(){
   const [types,setTypes] = useState<any[]>([])
   const [qualities,setQualities] = useState<any[]>([])
 
-  const [userId,setUserId] = useState<string | null>(null)
+  const [shop, setShop] = useState<any>(null)
   const [lang,setLang] = useState("en")
 
   // 🔎 FILTER
@@ -25,19 +25,30 @@ export default function OrderPartsPage(){
   useEffect(()=> setLang(getLang()), [])
 
   // 🔑 USER
-  useEffect(()=>{
-    supabase.auth.getUser().then(({data})=>{
-      if(data.user) setUserId(data.user.id)
-    })
-  },[])
+  useEffect(() => {
+  const loadShop = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data: shopData } = await supabase
+      .from("shops")
+      .select("*")
+      .eq("shop_id", user.id)
+      .single()
+
+    setShop(shopData)
+  }
+
+  loadShop()
+}, [])
 
   // 📥 LOAD
   useEffect(()=>{
-    if(!userId) return
+    if(!shop) return
 
     const load = async ()=>{
       const [s,t,q] = await Promise.all([
-        supabase.from("stock_items").select("*").eq("shop_id", userId),
+        supabase.from("stock_items").select("*").eq("shop_id", shop.id),
         supabase.from("part_types").select("*"),
         supabase.from("part_quality").select("*")
       ])
@@ -48,7 +59,7 @@ export default function OrderPartsPage(){
     }
 
     load()
-  },[userId])
+  },[shop])
 
   // 🎯 فقط 0 و 1
   const lowStock = items.filter(i => i.quantity <= 1)

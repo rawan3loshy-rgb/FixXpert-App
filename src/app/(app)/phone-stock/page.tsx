@@ -59,8 +59,7 @@ export default function StockPage() {
   const [fQuality, setFQuality] = useState("")
   const [fCapacity, setFCapacity] = useState("")
   const [fQty, setFQty] = useState("")
-
-  const [userId, setUserId] = useState<string | null>(null)
+  const [shop, setShop] = useState<any>(null)
   const [lang, setLang] = useState("en")
 
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -84,18 +83,29 @@ export default function StockPage() {
 
   // 🔑 USER
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setUserId(data.user.id)
-    })
-  }, [])
+  const loadShop = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data: shopData } = await supabase
+      .from("shops")
+      .select("*")
+      .eq("shop_id", user.id)
+      .single()
+
+    setShop(shopData)
+  }
+
+  loadShop()
+}, [])
 
   // 📥 LOAD
   useEffect(() => {
-    if (!userId) return
+    if (!shop) return
 
     const load = async () => {
       const [s, d, t, q] = await Promise.all([
-        supabase.from("phone_stock").select("*").eq("shop_id", userId),
+        supabase.from("phone_stock").select("*").eq("shop_id", shop.id),
         supabase.from("devices").select("*"),
         supabase.from("phone_types").select("*"),
         supabase.from("phone_quality").select("*")
@@ -109,7 +119,7 @@ export default function StockPage() {
      const { data: settings } = await supabase
       .from("shops")
       .select("profit_pin")
-      .eq("shop_id", userId)   // ✅ هذا أهم سطر
+      .eq("id", shop.id)   // ✅ هذا أهم سطر
       .maybeSingle()
 
       if (settings?.profit_pin) setAdminPin(settings.profit_pin)  
@@ -118,7 +128,7 @@ export default function StockPage() {
     }
     
     load()
-  }, [userId])
+  }, [shop])
   
 
   // 🔍 SEARCH
@@ -195,7 +205,7 @@ export default function StockPage() {
     quality,
     capacity,
     quantity: qty,
-    shop_id: userId || ""
+    shop_id: shop.id
   }
 
   setDraftItems(prev => [...prev, newItem])
@@ -532,7 +542,7 @@ export default function StockPage() {
             return
            }
 
-            if (!userId) return
+            if (!shop) return
 
            for (const item of draftItems) {
 
@@ -544,7 +554,7 @@ export default function StockPage() {
             type: item.type,
             quality: item.quality,
             capacity: item.capacity,
-            shop_id: userId
+            shop_id: shop.id
            })
            .maybeSingle()
 
@@ -574,7 +584,7 @@ export default function StockPage() {
               quality: item.quality,
               capacity: item.capacity,
               quantity: item.quantity,
-              shop_id: userId
+              shop_id: shop.id
             })
             .select()
             .single()

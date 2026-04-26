@@ -32,6 +32,10 @@ export default function RepairsPage() {
   const [selectedRepair, setSelectedRepair] = useState<any>(null)
   const [fixStatus, setFixStatus] = useState("")
   const [noWarranty, setNoWarranty] = useState(false)
+  const [stockItems, setStockItems] = useState<any[]>([])
+  const [selectedStock, setSelectedStock] = useState<any>(null)
+  const [partQty, setPartQty] = useState(1)
+  const [parts, setParts] = useState<any[]>([])
 
   // =========================
   // 🔥 STATUS RULES
@@ -121,6 +125,35 @@ export default function RepairsPage() {
       setLoading(false)
     }
   }
+  useEffect(() => {
+  if (!showFixModal || fixStatus !== "fixed") return
+
+  loadStock()
+}, [showFixModal, fixStatus])
+
+const loadStock = async () => {
+
+  if (!shop || !selectedRepair) return
+
+ const { data, error } = await supabase
+  .from("stock_items")
+  .select("*")
+  .eq("shop_id", shop.id)
+
+console.log("SHOP ID:", shop?.id)
+console.log("SELECTED DEVICE:", selectedRepair?.device)
+console.log("RAW STOCK:", data)
+console.log("ERROR:", error)
+
+  // 🔥 فلترة بالفرونت (أذكى من ilike)
+  const filtered = (data || []).filter(item =>
+    item.device?.toLowerCase().includes(
+      selectedRepair.device?.toLowerCase()
+    )
+  )
+
+  setStockItems(filtered)
+}
 
   // =========================
   // 🔥 ACTIONS
@@ -180,11 +213,11 @@ ${url}`
 
     // 🔥 READY → OPEN MODAL
     if (newStatus === "ready") {
-      setSelectedRepair(repair)
-      setShowFixModal(true)
-      return
-    }
+    setSelectedRepair(repair)
+    setShowFixModal(true)
 
+  return
+}
     await supabase
       .from("repairs")
       .update({ status: newStatus })
@@ -200,36 +233,79 @@ ${url}`
   }
 
   // 🔥 CONFIRM READY
-  const confirmReady = async () => {
+const confirmReady = async () => {
 
-    if (!selectedRepair) return
+  if (!selectedRepair) return
 
-    if (!fixStatus) {
-      showToast("Select result", "error")
+  if (!fixStatus) {
+    showToast("Select result", "error")
+    return
+  }
+
+if (fixStatus === "fixed") {
+
+  for (const p of parts) {
+
+    const item = stockItems.find(
+      s => s.type === p.type && s.quality === p.quality
+    )
+
+    if (!item) {
+      showToast("Part not found", "error")
       return
     }
 
+    if (item.quantity < p.quantity) {
+      showToast("Not enough stock", "error")
+      return
+    }
+
+    // insert
+    await supabase.from("repair_parts").insert({
+      shop_id: shop.id,
+      repair_id: selectedRepair.id,
+      stock_item_id: item.id,
+      quantity: p.quantity,
+      cost_price: item.cost_price
+    })
+
+    // update stock
     await supabase
-      .from("repairs")
+      .from("stock_items")
       .update({
-        status: "ready",
-        fix_status: fixStatus,
-        no_warranty: noWarranty
+        quantity: item.quantity - p.quantity
       })
-      .eq("id", selectedRepair.id)
-
-    setRepairs(prev =>
-      prev.map(r =>
-        r.id === selectedRepair.id
-          ? { ...r, status: "ready", fix_status: fixStatus, no_warranty: noWarranty }
-          : r
-      )
-    )
-
-    setShowFixModal(false)
-    setFixStatus("")
-    setNoWarranty(false)
+      .eq("id", item.id)
   }
+}
+
+  // 🔥 1. update repair
+  await supabase
+    .from("repairs")
+    .update({
+      status: "ready",
+      fix_status: fixStatus,
+      no_warranty: noWarranty
+    })
+    .eq("id", selectedRepair.id)
+
+
+
+  // 🔥 UI update
+  setRepairs(prev =>
+    prev.map(r =>
+      r.id === selectedRepair.id
+        ? { ...r, status: "ready", fix_status: fixStatus, no_warranty: noWarranty }
+        : r
+    )
+  )
+
+  setShowFixModal(false)
+  setFixStatus("")
+  setNoWarranty(false)
+  setSelectedStock(null)
+  setPartQty(1)
+}
 
   // =========================
   // 🔍 FILTER
@@ -488,12 +564,84 @@ ${url}`
 
       {/* OPTIONS */}
        <div className="space-y-4">
+       {fixStatus === "fixed" && (
+  <div className="space-y-3 mt-4">
 
+    <p className="text-xs text-slate-400">
+      Device: {selectedRepair?.device}
+    </p>
+
+    {parts.map((p, i) => (
+      <div key={i} className="flex gap-2">
+
+        {/* TYPE */}
+        <select
+          value={p.type}
+          onChange={(e)=>{
+            const newParts = [...parts]
+            newParts[i].type = e.target.value
+            setParts(newParts)
+          }}
+          className="flex-1 bg-slate-800 border border-white/10 rounded px-2 py-1 text-xs"
+        >
+          <option value="">Type</option>
+          {[...new Set(stockItems.map(s=>s.type))].map(t => (
+            <option key={t}>{t}</option>
+          ))}
+        </select>
+
+        {/* QUALITY */}
+        <select
+          value={p.quality}
+          onChange={(e)=>{
+            const newParts = [...parts]
+            newParts[i].quality = e.target.value
+            setParts(newParts)
+          }}
+          className="flex-1 bg-slate-800 border border-white/10 rounded px-2 py-1 text-xs"
+        >
+          <option value="">Quality</option>
+          {[...new Set(stockItems.map(s=>s.quality))].map(q => (
+            <option key={q}>{q}</option>
+          ))}
+        </select>
+
+        {/* QTY */}
+        <input
+          type="number"
+          min={1}
+          value={p.quantity}
+          onChange={(e)=>{
+            const newParts = [...parts]
+            newParts[i].quantity = Number(e.target.value)
+            setParts(newParts)
+          }}
+          className="w-16 bg-slate-800 border border-white/10 rounded px-2 text-xs"
+        />
+
+      </div>
+    ))}
+
+    {/* ADD PART */}
+    <button
+      onClick={() => setParts([...parts, { type:"", quality:"", quantity:1 }])}
+      className="text-xs text-indigo-400"
+    >
+      + Add Part
+    </button>
+
+  </div>
+)}
          {/* FIXED */}
          <motion.div
           whileHover={{ scale: 1.03 }}
          whileTap={{ scale: 0.97 }}
-         onClick={()=>setFixStatus("fixed")}
+         onClick={()=>{
+         setFixStatus("fixed")
+         setParts([{ type: "", quality: "", quantity: 1 }])
+
+         loadStock() // 🔥 الحل الحقيقي
+         }}
           className={`
           cursor-pointer p-4 rounded-xl border transition
          flex justify-between items-center
