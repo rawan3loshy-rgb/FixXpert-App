@@ -53,7 +53,7 @@ export default function PrintPage() {
 
   const logoUrl = repair.shop?.logo_url || null
 
-  const trackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/track/${repair.order_number}`
+  const trackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/track/${repair.id}`
 
   const safe = (val: any) => {
     if (!val) return "Nicht angegeben"

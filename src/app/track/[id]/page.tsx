@@ -16,6 +16,7 @@ export default function TrackRepair(){
   const [repair,setRepair] = useState<any>(null)
   const [loading,setLoading] = useState(true)
   const [canSound,setCanSound] = useState(false)
+  
 
   // =========================
   // 🔥 FIX HYDRATION
@@ -48,11 +49,13 @@ export default function TrackRepair(){
     if(!mounted || !id) return
 
     const load = async ()=>{
+      const isUUID = id.includes("-")
+
       const { data } = await supabase
-        .from("repairs")
-        .select("*")
-        .eq("order_number", Number(id)) // ✅ FIX
-        .single()
+      .from("repairs")
+      .select("*")
+      .eq(isUUID ? "id" : "order_number", isUUID ? id : Number(id))
+      .single()
 
       setRepair(data)
       setLoading(false)
@@ -71,10 +74,15 @@ export default function TrackRepair(){
         },
         (payload:any)=>{
 
-          if(payload.new.order_number == Number(id)){ // ✅ FIX
-            setRepair(payload.new)
-            playSound()
-          }
+          const isUUID = id.includes("-")
+
+          if(
+          (isUUID && payload.new.id === id) ||
+          (!isUUID && payload.new.order_number == Number(id))
+         ){
+          setRepair(payload.new)
+          playSound()
+          } 
 
         }
       )
