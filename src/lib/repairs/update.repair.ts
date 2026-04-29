@@ -35,7 +35,7 @@ export async function updateRepair(id: string, updates: any) {
     "status",
     "technician",
     "returned",
-    "pickup_time",
+    "pickup_at",
     "description"
   ]
 
@@ -58,7 +58,7 @@ export async function updateRepair(id: string, updates: any) {
       value = Boolean(value)
     }
 
-    if (key === "pickup_time") {
+    if (key === "pickup_at") {
       value = value && value !== "" ? value : null
     }
 

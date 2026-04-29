@@ -524,7 +524,7 @@ if (fixStatus === "fixed") {
                     <span>IMEI: {r.imei || "-"}</span>
 
                     <span className="text-green-400 font-semibold">
-                      💰 {profit} €
+                      💰 {r.price} €
                     </span>
 
                     <div className="flex gap-2 mt-3 flex-wrap">
