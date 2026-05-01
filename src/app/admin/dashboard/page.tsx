@@ -35,12 +35,6 @@ export default function AdminDashboard(){
 
   useEffect(() => {
   setMounted(true)
-
-  const time = localStorage.getItem("admin_unlock_time")
-
-  if (time && Date.now() - Number(time) < 10 * 60 * 1000) {
-    setUnlocked(true)
-  }
 }, [])
   
 
@@ -160,17 +154,14 @@ export default function AdminDashboard(){
   // ❌ لا ترندر قبل mount
  if (!mounted) return null
 
+ 
+ if (!unlocked) {
+  return <AdminPinModal onSuccess={() => setUnlocked(true)} />
+}
+
 return (
   <>
     {/* 🔐 PIN MODAL */}
-    {!unlocked && (
-      <AdminPinModal
-        onSuccess={() => {
-          localStorage.setItem("admin_unlock_time", Date.now().toString())
-          setUnlocked(true)
-        }}
-      />
-    )}
 
     {/* ✅ ADMIN CONTENT */}
     {unlocked && (
