@@ -34,7 +34,7 @@ export default function AdminDashboard(){
   
 
   useEffect(() => {
-  setMounted(false)
+  setMounted(true)
 }, [])
   
 
