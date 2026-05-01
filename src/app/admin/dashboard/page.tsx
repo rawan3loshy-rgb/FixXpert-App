@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase"
 import TopShops from "@/components/admin/top-shops"
 import ProblemChart from "@/components/admin/problem-chart"
 import ActivityFeed from "@/components/admin/activity-feed"
+import AdminPinModal from "@/components/admin-pin-modal"
 
 import {
   LineChart,
@@ -26,16 +27,26 @@ export default function AdminDashboard(){
   const [loading,setLoading] = useState(true)
   const [notifications,setNotifications] = useState<string[]>([])
   const [search,setSearch] = useState("")
-
-  // ✅ FIX HYDRATION
+  const [unlocked, setUnlocked] = useState(false)
   const [mounted, setMounted] = useState(false)
 
+  // ✅ FIX HYDRATION
+  
+
   useEffect(() => {
-    setMounted(true)
-  }, [])
+  setMounted(true)
+
+  const time = localStorage.getItem("admin_unlock_time")
+
+  if (time && Date.now() - Number(time) < 10 * 60 * 1000) {
+    setUnlocked(true)
+  }
+}, [])
+  
 
   useEffect(()=>{
     if (!mounted) return
+    
 
     loadStats()
 
@@ -147,108 +158,122 @@ export default function AdminDashboard(){
   }
 
   // ❌ لا ترندر قبل mount
-  if (!mounted) return null
+ if (!mounted) return null
 
-  return(
+return (
+  <>
+    {/* 🔐 PIN MODAL */}
+    {!unlocked && (
+      <AdminPinModal
+        onSuccess={() => {
+          localStorage.setItem("admin_unlock_time", Date.now().toString())
+          setUnlocked(true)
+        }}
+      />
+    )}
 
-    <div className="max-w-7xl mx-auto space-y-10">
+    {/* ✅ ADMIN CONTENT */}
+    {unlocked && (
+      <div className="max-w-7xl mx-auto space-y-10">
 
-      {/* HEADER */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          🚀 Admin Control Center
-        </h1>
-        <p className="text-slate-400 mt-1">
-          Real-time platform analytics & system insights
-        </p>
-      </div>
-
-      {/* SEARCH + EXPORT */}
-      <div className="flex gap-4">
-        <input
-          placeholder="Search..."
-          value={search}
-          onChange={(e)=>setSearch(e.target.value)}
-          className="bg-slate-900 border border-white/10 px-4 py-2 rounded-xl w-full focus:ring-2 focus:ring-indigo-500 outline-none"
-        />
-
-        <button
-          onClick={exportCSV}
-          className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition"
-        >
-          Export
-        </button>
-      </div>
-
-      {/* NOTIFICATIONS */}
-      {notifications.length > 0 && (
-        <div className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-2xl backdrop-blur-md">
-          {notifications.slice(0,3).map((n,i)=>(
-            <p key={i} className="text-sm text-indigo-300">{n}</p>
-          ))}
+        {/* HEADER */}
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            🚀 Admin Control Center
+          </h1>
+          <p className="text-slate-400 mt-1">
+            Real-time platform analytics & system insights
+          </p>
         </div>
-      )}
 
-      {/* ALERTS */}
-      <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
-        <h3 className="font-semibold mb-4 text-red-400">🚨 System Alerts</h3>
+        {/* SEARCH + EXPORT */}
+        <div className="flex gap-4">
+          <input
+            placeholder="Search..."
+            value={search}
+            onChange={(e)=>setSearch(e.target.value)}
+            className="bg-slate-900 border border-white/10 px-4 py-2 rounded-xl w-full focus:ring-2 focus:ring-indigo-500 outline-none"
+          />
 
-        {repairsToday === 0 && <p className="text-yellow-400">⚠️ No repairs today</p>}
-        {shops === 0 && <p className="text-red-400">❌ No shops</p>}
-        {revenue === 0 && <p className="text-orange-400">💸 No revenue</p>}
-      </div>
+          <button
+            onClick={exportCSV}
+            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition"
+          >
+            Export
+          </button>
+        </div>
 
-      {/* STATS */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <Card title="Active Shops" value={shops}/>
-        <Card title="Repairs Today" value={repairsToday} highlight/>
-        <Card title="Total Repairs" value={totalRepairs}/>
-        <Card title="Revenue" value={`€${revenue}`} success/>
-      </div>
-
-      {/* CHART */}
-      <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-xl">
-
-        <h2 className="mb-4 font-semibold">Repairs Growth</h2>
-
-        {loading ? "Loading..." : (
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
-              <XAxis dataKey="date"/>
-              <YAxis/>
-              <Tooltip />
-              <Line 
-                type="monotone"
-                dataKey="repairs"
-                stroke="#6366f1"
-                strokeWidth={3}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        {/* NOTIFICATIONS */}
+        {notifications.length > 0 && (
+          <div className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-2xl backdrop-blur-md">
+            {notifications.slice(0,3).map((n,i)=>(
+              <p key={i} className="text-sm text-indigo-300">{n}</p>
+            ))}
+          </div>
         )}
 
-      </div>
-
-      {/* SECOND */}
-      <div className="grid md:grid-cols-2 gap-6">
-
+        {/* ALERTS */}
         <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
-          <ProblemChart/>
+          <h3 className="font-semibold mb-4 text-red-400">🚨 System Alerts</h3>
+
+          {repairsToday === 0 && <p className="text-yellow-400">⚠️ No repairs today</p>}
+          {shops === 0 && <p className="text-red-400">❌ No shops</p>}
+          {revenue === 0 && <p className="text-orange-400">💸 No revenue</p>}
+        </div>
+
+        {/* STATS */}
+        <div className="grid md:grid-cols-4 gap-6">
+          <Card title="Active Shops" value={shops}/>
+          <Card title="Repairs Today" value={repairsToday} highlight/>
+          <Card title="Total Repairs" value={totalRepairs}/>
+          <Card title="Revenue" value={`€${revenue}`} success/>
+        </div>
+
+        {/* CHART */}
+        <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-xl">
+
+          <h2 className="mb-4 font-semibold">Repairs Growth</h2>
+
+          {loading ? "Loading..." : (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <XAxis dataKey="date"/>
+                <YAxis/>
+                <Tooltip />
+                <Line 
+                  type="monotone"
+                  dataKey="repairs"
+                  stroke="#6366f1"
+                  strokeWidth={3}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+
+        </div>
+
+        {/* SECOND */}
+        <div className="grid md:grid-cols-2 gap-6">
+
+          <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
+            <ProblemChart/>
+          </div>
+
+          <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
+            <ActivityFeed/>
+          </div>
+
         </div>
 
         <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
-          <ActivityFeed/>
+          <TopShops/>
         </div>
 
       </div>
-
-      <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
-        <TopShops/>
-      </div>
-
-    </div>
-  )
+    )}
+  </>
+)
 }
 
 /* CARD */
