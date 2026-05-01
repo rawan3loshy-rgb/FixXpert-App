@@ -36,7 +36,11 @@ export default function Verify(){
       router.push("/login")
     }
   }, [])
-
+    useEffect(() => {
+  supabase.auth.getUser().then(({ data }) => {
+    console.log("USER AFTER VERIFY:", data.user)
+  })
+}, [])
   // =========================
   // SEND OTP (مرة واحدة)
   // =========================
@@ -118,6 +122,7 @@ export default function Verify(){
 
       return
     }
+    
 
     // ✅ إذا نجاح
    

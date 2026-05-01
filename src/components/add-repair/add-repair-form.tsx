@@ -347,8 +347,8 @@ const applySuggestion = (hours: number) => {
                 </option>
 
                 {Array.isArray(employees) &&
-                 employees.map((emp) => (
-                 <option key={emp.id} value={emp.name}>
+                 employees.map((emp,i) => (
+                 <option key={emp.id|| i} value={emp.name}>
                    {emp.name}
                   </option>
                 ))}

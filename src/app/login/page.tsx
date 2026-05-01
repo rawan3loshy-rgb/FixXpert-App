@@ -48,6 +48,8 @@ export default function LoginPage() {
         setLoading(false)
         return
       }
+      const { data: { user } } = await supabase.auth.getUser()
+console.log("USER ID AFTER LOGIN:", user?.id)
 
       // ✅ حفظ وقت الدخول
       localStorage.setItem("login_time", Date.now().toString())
@@ -74,7 +76,6 @@ export default function LoginPage() {
     }
 
     // ❗ logout لنفرض OTP
-    await supabase.auth.signOut()
 
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email,
