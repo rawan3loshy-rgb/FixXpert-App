@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { supabase } from "@/lib/supabase"
 
 export default function AdminPinModal({ onSuccess }: any) {
@@ -9,30 +9,14 @@ export default function AdminPinModal({ onSuccess }: any) {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  // ⌨️ keyboard support
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // 🔥 focus تلقائي
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key >= "0" && e.key <= "9") {
-        addDigit(e.key)
-      }
-      if (e.key === "Backspace") {
-        removeDigit()
-      }
-    }
-
-    window.addEventListener("keydown", handleKey)
-    return () => window.removeEventListener("keydown", handleKey)
-  }, [pin])
-
-  // 🔢 add digit
-  function addDigit(d: string) {
-    if (pin.length >= 6) return
-    setPin(prev => prev + d)
-  }
-
-  function removeDigit() {
-    setPin(prev => prev.slice(0, -1))
-  }
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100)
+  }, [])
 
   // 🔥 auto submit
   useEffect(() => {
@@ -44,9 +28,7 @@ export default function AdminPinModal({ onSuccess }: any) {
       setLoading(true)
       setError("")
 
-      const {
-        data: { user }
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
 
       const res = await fetch("/api/admin/check-pin", {
         method: "POST",
@@ -64,6 +46,7 @@ export default function AdminPinModal({ onSuccess }: any) {
       } else {
         setError("Wrong PIN")
         setPin("")
+        inputRef.current?.focus()
       }
 
     } catch {
@@ -75,57 +58,65 @@ export default function AdminPinModal({ onSuccess }: any) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
 
-      <div className="bg-slate-900 p-8 rounded-3xl text-center w-[320px]">
+      {/* 🔥 BLUR */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" />
 
-        <h2 className="text-xl font-bold mb-6">🔐 Admin Access</h2>
+      {/* 🔒 CARD */}
+      <div className="relative z-10 w-[320px] p-8 rounded-3xl
+        bg-white/5 backdrop-blur-xl border border-white/10
+        shadow-[0_20px_80px_rgba(0,0,0,0.6)] text-center">
 
-        {/* dots */}
-        <div className="flex justify-center gap-3 mb-6">
+        <h2 className="text-xl font-semibold text-white mb-6">
+          🔐 Admin Access
+        </h2>
+
+        {/* ✅ INPUT (المهم جداً) */}
+        <input
+          ref={inputRef}
+          type="tel"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          autoComplete="one-time-code"
+          value={pin}
+          onChange={(e) => {
+            const val = e.target.value.replace(/\D/g, "")
+            if (val.length <= 6) setPin(val)
+          }}
+          className="absolute opacity-0"
+        />
+
+        {/* 🔵 DOTS */}
+        <div
+          onClick={() => inputRef.current?.focus()}
+          className="flex justify-center gap-3 mb-4 cursor-text"
+        >
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className={`w-4 h-4 rounded-full ${
-                pin[i] ? "bg-indigo-500" : "bg-white/20"
+              className={`w-4 h-4 rounded-full transition-all duration-200 ${
+                pin[i] ? "bg-white scale-110" : "bg-white/20"
               }`}
             />
           ))}
         </div>
 
-        {error && <p className="text-red-400 text-sm mb-2">{error}</p>}
-        {loading && <p className="text-slate-400 text-sm">Checking...</p>}
+        <p className="text-sm text-white/60">
+          Enter your 6-digit PIN
+        </p>
 
-        {/* 🔢 keypad */}
-        <div className="grid grid-cols-3 gap-3 mt-4">
+        {loading && (
+          <p className="text-xs text-blue-400 mt-2">
+            Checking...
+          </p>
+        )}
 
-          {[1,2,3,4,5,6,7,8,9].map(n => (
-            <button
-              key={n}
-              onClick={() => addDigit(n.toString())}
-              className="h-14 rounded-xl bg-slate-800 hover:bg-indigo-600 text-lg font-semibold"
-            >
-              {n}
-            </button>
-          ))}
-
-          <div />
-
-          <button
-            onClick={() => addDigit("0")}
-            className="h-14 rounded-xl bg-slate-800 hover:bg-indigo-600 text-lg font-semibold"
-          >
-            0
-          </button>
-
-          <button
-            onClick={removeDigit}
-            className="h-14 rounded-xl bg-red-500 hover:bg-red-600 text-lg"
-          >
-            ⌫
-          </button>
-
-        </div>
+        {error && (
+          <p className="text-xs text-red-400 mt-2">
+            {error}
+          </p>
+        )}
 
       </div>
     </div>
