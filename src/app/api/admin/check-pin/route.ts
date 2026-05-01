@@ -17,18 +17,18 @@ export async function POST(req: Request) {
       .single()
 
     if (!shop) {
-      return new Response("Not found", { status: 404 })
+      return new Response("Not found", { status: 404 });
     }
 
     const valid = await bcrypt.compare(pin, shop.admin_pin_hash)
 
     if (!valid) {
-      return new Response("INVALID", { status: 401 })
+      return new Response("INVALID", { status: 401 });
     }
 
     return new Response("OK")
 
   } catch (e) {
-    return new Response("ERROR", { status: 500 })
+    return new Response("ERROR", { status: 500 });
   }
 }
