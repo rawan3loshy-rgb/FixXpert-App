@@ -2,11 +2,184 @@
 type Lang = "en" | "de" 
 
 // 🔥 GLOBAL LANG (SSR SAFE)
-let currentLang: Lang = "en"
+
 
 // 🔥 TEXT DICTIONARY
 export const TEXT: Record<string, Record<Lang, string>> = {
 
+
+   // Hero stats
+  hero_stat_1: { en: "12k+", de: "12k+" },
+hero_stat_1_label: { en: "Repairs", de: "Reparaturen" },
+ 
+
+hero_stat_2: { en: "4.9★", de: "4.9★" },
+hero_stat_2_label: { en: "Rating", de: "Bewertung" },
+
+hero_stat_3: { en: "24h", de: "24h" },
+hero_stat_3_label: { en: "Turnaround", de: "Bearbeitung" },
+hero_stat_4: { en: "90 Day Warranty", de: "90 Tage Garantie" },
+   // WEBSITE
+
+nav_services: { en: "Services", de: "Services" },
+nav_shop: { en: "Shop", de: "Shop" },
+nav_mailin: { en: "Mail-In", de: "Einsenden" },
+nav_reviews: { en: "Reviews", de: "Bewertungen" },
+nav_faq: { en: "FAQ", de: "FAQ" },
+nav_contact: { en: "Contact", de: "Kontakt" },
+nav_cta: { en: "Book Repair", de: "Reparatur buchen" },
+
+hero_eyebrow: { en: "Professional Device Repair", de: "Professionelle Reparatur" },
+hero_headline_1: { en: "Your Device,", de: "Dein Gerät," },
+hero_headline_2: { en: "Restored.", de: "Wie neu." },
+hero_sub: { en: "Fast, reliable repairs for phones, tablets & laptops.", de: "Schnelle & zuverlässige Reparaturen." },
+hero_cta_primary: { en: "Start Repair", de: "Reparatur starten" },
+hero_cta_secondary: { en: "View Shop", de: "Shop ansehen" },
+
+devices_title: { en: "Select Your Device", de: "Gerät auswählen" },
+devices_sub: { en: "Choose your device category", de: "Gerätekategorie wählen" },
+devices_phone: { en: "Smartphone", de: "Smartphone" },
+devices_tablet: { en: "Tablet", de: "Tablet" },
+devices_laptop: { en: "Laptop", de: "Laptop" },
+devices_other: { en: "Other", de: "Andere" },
+devices_brand_label: { en: "Select Brand", de: "Marke wählen" },
+devices_model_label: { en: "Select Model", de: "Modell wählen" },
+devices_cta: { en: "See Repair Options", de: "Reparatur anzeigen" },
+
+services_eyebrow: { en: "Repair Services", de: "Reparaturservices" },
+services_title: { en: "What We Fix", de: "Was wir reparieren" },
+services_sub: { en: "We fix everything from screens to water damage.", de: "Von Display bis Wasserschaden." },
+
+pricing_eyebrow: { en: "Transparent Pricing", de: "Transparente Preise" },
+pricing_title: { en: "No Hidden Fees", de: "Keine versteckten Kosten" },
+pricing_sub: { en: "All repairs include warranty.", de: "Alle Reparaturen mit Garantie." },
+
+mailin_eyebrow: { en: "Mail-In Service", de: "Einsendeservice" },
+mailin_title: { en: "Send Us Your Device", de: "Gerät einsenden" },
+mailin_sub: { en: "We repair and send it back.", de: "Wir reparieren & senden zurück." },
+
+reviews_eyebrow: { en: "Customer Reviews", de: "Bewertungen" },
+reviews_title: { en: "Trusted by Thousands", de: "Tausende vertrauen uns" },
+
+faq_eyebrow: { en: "FAQ", de: "FAQ" },
+faq_title: { en: "Common Questions", de: "Häufige Fragen" },
+
+footer_tagline: { en: "Premium repair service.", de: "Premium Reparaturservice." },
+footer_privacy: { en: "Privacy", de: "Datenschutz" },
+footer_terms: { en: "Terms", de: "AGB" },
+footer_imprint: { en: "Imprint", de: "Impressum" },
+
+
+  // SERVICES
+
+service_screen_title: { en: "Screen Repair", de: "Display Reparatur" },
+service_screen_desc: { en: "Cracked or broken screens replaced.", de: "Defekte Displays werden ersetzt." },
+
+service_battery_title: { en: "Battery Replacement", de: "Akku Austausch" },
+service_battery_desc: { en: "Battery issues fixed.", de: "Akkuprobleme werden behoben." },
+
+service_motherboard_title: { en: "Motherboard Repair", de: "Mainboard Reparatur" },
+service_motherboard_desc: { en: "Advanced board repairs.", de: "Komplexe Reparaturen." },
+
+service_water_title: { en: "Water Damage", de: "Wasserschaden" },
+service_water_desc: { en: "Liquid damage recovery.", de: "Wasserschaden Reparatur." },
+
+service_charging_port_title: { en: "Charging Port", de: "Ladeanschluss" },
+service_charging_port_desc: { en: "Fix charging problems.", de: "Ladeprobleme beheben." },
+
+service_camera_title: { en: "Camera Repair", de: "Kamera Reparatur" },
+service_camera_desc: { en: "Camera issues fixed.", de: "Kamera wird repariert." },
+
+service_tag_popular: { en: "Most Popular", de: "Beliebt" },
+service_tag_advanced: { en: "Advanced", de: "Fortgeschritten" },
+service_tag_emergency: { en: "Emergency", de: "Notfall" },
+
+service_details: { en: "Details", de: "Details" },
+
+service_note: {
+  en: "All repairs include free diagnostic and 90-day warranty.",
+  de: "Alle Reparaturen inkl. Diagnose und Garantie."
+},
+// REVIEWS
+
+review_1_name: {
+  en: "Markus Bauer",
+  de: "Markus Bauer"
+},
+review_1_location: {
+  en: "Berlin, Germany",
+  de: "Berlin, Deutschland"
+},
+review_1_device: {
+  en: "iPhone 14 Pro — Screen Repair",
+  de: "iPhone 14 Pro — Display Reparatur"
+},
+review_1_quote: {
+  en: "Absolutely flawless service. My screen was replaced within 3 hours and it looks factory-new.",
+  de: "Absolut perfekter Service. Display wurde in 3 Stunden ersetzt."
+},
+review_1_date: {
+  en: "15 Mar 2026",
+  de: "15.03.2026"
+},
+review_1_alt: {
+  en: "German man",
+  de: "Deutscher Mann"
+},
+
+// ===== 2
+
+review_2_name: {
+  en: "Lena Hoffmann",
+  de: "Lena Hoffmann"
+},
+review_2_location: {
+  en: "Munich, Germany",
+  de: "München, Deutschland"
+},
+review_2_device: {
+  en: "MacBook Pro — Battery Replacement",
+  de: "MacBook Pro — Akku Austausch"
+},
+review_2_quote: {
+  en: "Mail-in service was smooth. My MacBook now lasts a full day again.",
+  de: "Versandservice war perfekt. Akku hält wieder den ganzen Tag."
+},
+review_2_date: {
+  en: "28 Feb 2026",
+  de: "28.02.2026"
+},
+review_2_alt: {
+  en: "German woman",
+  de: "Deutsche Frau"
+},
+
+// ===== 3
+
+review_3_name: {
+  en: "Ahmed Al-Rashid",
+  de: "Ahmed Al-Rashid"
+},
+review_3_location: {
+  en: "Hamburg, Germany",
+  de: "Hamburg, Deutschland"
+},
+review_3_device: {
+  en: "Samsung Galaxy — Water Damage",
+  de: "Samsung Galaxy — Wasserschaden"
+},
+review_3_quote: {
+  en: "They recovered all my data after water damage. Incredible work.",
+  de: "Alle Daten wurden nach Wasserschaden gerettet. Unglaublich."
+},
+review_3_date: {
+  en: "10 Apr 2026",
+  de: "10.04.2026"
+},
+review_3_alt: {
+  en: "Middle eastern man",
+  de: "Mann"
+},
   // dashboard
   dashboard: { en: "Dashboard", de: "Dashboard" },
   monitor: { en: "Monitor your repair business in real time", de: "Überwache dein Geschäft in Echtzeit" },
@@ -65,10 +238,73 @@ orderPlaceholder: {
   en: "Order number...",
   de: "Auftragsnummer..."
 },
+device_title: {
+  en: "Select Device",
+  de: "Gerät auswählen"
+},
 trackButton: {
   en: "Track Repair",
   de: "Verfolgen"
 },
+// PRICING
+
+pricing_screen_title: {
+  en: "Screen Repair",
+  de: "Display Reparatur"
+},
+pricing_complete_title: {
+  en: "Complete Care",
+  de: "Komplettservice"
+},
+pricing_motherboard_title: {
+  en: "Motherboard Repair",
+  de: "Mainboard Reparatur"
+},
+
+pricing_per_device: {
+  en: "per device",
+  de: "pro Gerät"
+},
+
+pricing_screen_cta: {
+  en: "Book Screen Repair",
+  de: "Display Reparatur buchen"
+},
+pricing_complete_cta: {
+  en: "Get Complete Care",
+  de: "Komplettservice wählen"
+},
+pricing_motherboard_cta: {
+  en: "Book Advanced Repair",
+  de: "Erweiterte Reparatur buchen"
+},
+
+pricing_most_popular: {
+  en: "Most Popular",
+  de: "Beliebt"
+},
+
+// FEATURES - SCREEN
+pricing_screen_feat1: { en: "OEM-quality display panels", de: "OEM Display Qualität" },
+pricing_screen_feat2: { en: "Same-day service available", de: "Reparatur am selben Tag" },
+pricing_screen_feat3: { en: "Touch & color calibration", de: "Touch & Farbkalibrierung" },
+pricing_screen_feat4: { en: "90-day warranty", de: "90 Tage Garantie" },
+pricing_screen_feat5: { en: "Free diagnostic", de: "Kostenlose Diagnose" },
+
+// FEATURES - COMPLETE
+pricing_complete_feat1: { en: "Screen + battery + port", de: "Display + Akku + Anschluss" },
+pricing_complete_feat2: { en: "Full hardware diagnostic", de: "Komplette Hardware Diagnose" },
+pricing_complete_feat3: { en: "Software optimization", de: "Software Optimierung" },
+pricing_complete_feat4: { en: "6-month warranty", de: "6 Monate Garantie" },
+pricing_complete_feat5: { en: "Priority service queue", de: "Prioritätsservice" },
+pricing_complete_feat6: { en: "Free return shipping", de: "Kostenloser Rückversand" },
+
+// FEATURES - MOTHERBOARD
+pricing_motherboard_feat1: { en: "Component-level soldering", de: "Komponentenlöten" },
+pricing_motherboard_feat2: { en: "Chip-level diagnostics", de: "Chip Diagnose" },
+pricing_motherboard_feat3: { en: "Data recovery attempt", de: "Datenrettung Versuch" },
+pricing_motherboard_feat4: { en: "90-day warranty", de: "90 Tage Garantie" },
+pricing_motherboard_feat5: { en: "Detailed repair report", de: "Detaillierter Bericht" },
   // employees
   employeeName: { en: "Employee name", de: "Mitarbeitername" },
   employeeAdded: { en: "Employee added", de: "Mitarbeiter hinzugefügt" },
@@ -145,6 +381,8 @@ notice: {
   onlyDeliveredAllowed: { en: "Only delivered allowed", de: "Nur 'Abgeholt' erlaubt" },
   invalidStatus: { en: "Invalid status transition", de: "Ungültiger Statuswechsel" },
 
+ 
+
   // 🔥 track
 
 
@@ -165,12 +403,18 @@ statusProcessing: { en: "Processing...", de: "In Bearbeitung..." },
   trackDeviceDesc: { en: "Quickly look up by IMEI or Order", de: "Suche per IMEI oder Auftrag" },
 
   // table
-  recentRepairs: { en: "Recent Repairs", de: "Letzte Reparaturen" },
-  searchRepair: { en: "Search repair...", de: "Reparatur suchen..." },
-  customer: { en: "Customer", de: "Kunde" },
-  device: { en: "Device", de: "Gerät" },
-  status: { en: "Status", de: "Status" },
-  date: { en: "Date", de: "Datum" },
+   hero_title: { en: "Premium Smartphone Repair", de: "Premium Smartphone Reparatur" },
+  
+  select_device: { en: "Select Device", de: "Gerät auswählen" },
+  view_prices: { en: "View Prices", de: "Preise ansehen" },
+  screen: { en: "Screen", de: "Bildschirm" },
+  model: { en: "Model", de: "Modell" },
+  battery: { en: "Battery", de: "Batterie" },
+  camera: { en: "Camera", de: "Kamera" },
+   why_us: { en: "Why Choose Us", de: "Warum uns wählen" },
+  fast: { en: "Fast", de: "Schnell" },
+  warranty: { en: "Warranty", de: "Garantie" },
+  quality: { en: "Quality", de: "Qualität" },
   
 
   
@@ -250,15 +494,7 @@ addDevice: {
   de: "Gerät hinzufügen"
 },
 
-model: {
-  en: "Model",
-  de: "Modell"
-},
 
-quality: {
-  en: "Quality",
-  de: "Qualität"
-},
 
 type: {
   en: "Type",
@@ -360,6 +596,7 @@ close: {
 
 
 
+
 // 🔥 STATUS TRANSLATION
 export const STATUS_LABELS: Record<string, Record<Lang, string>> = {
   "received": { en: "Received", de: "Empfangen" },
@@ -370,37 +607,21 @@ export const STATUS_LABELS: Record<string, Record<Lang, string>> = {
   "delivered": { en: "Delivered", de: "Abgeholt" }
 }
 
-
-
-
-
-
-// 🔥 SET LANGUAGE
+// 🔥 GET LANGUAGE (SSR SAFE)
 export const setLang = (lang: Lang) => {
-  currentLang = lang
-
   if (typeof window !== "undefined") {
     localStorage.setItem("lang", lang)
   }
 }
 
-
-// 🔥 GET LANGUAGE (SSR SAFE)
 export const getLang = (): Lang => {
+  if (typeof window === "undefined") return "en"
 
-  // SSR
-  if (typeof window === "undefined") return currentLang
-
-  // CLIENT
-  const stored = localStorage.getItem("lang") as Lang | null
-
-  if (stored) {
-    currentLang = stored
-    return stored
-  }
-
-  return currentLang
+  return (localStorage.getItem("lang") as Lang) || "en"
 }
+
+
+
 
 
 // 🔥 TRANSLATE
